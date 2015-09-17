@@ -1,9 +1,23 @@
 var React = require('react');
+var RiverSite = require('./RiverSite.react')
 var RI_App = React.createClass({
+  
+  // getInitialState: function(){
+
+  // },
+
   render: function() {
-  return <div>Hello {this.props.name}</div>;
-  }
+  return (
+    <div>
+      <RiverSite site={this.props.site} />
+    </div>
+    );
+  },
+  // _onChange: function(){
+    
+  // }
 });
+
 
 // var Footer = require('./Footer.react');
 // var Header = require('./Header.react');
