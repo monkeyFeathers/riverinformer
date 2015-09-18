@@ -1,6 +1,6 @@
 var React = require('react');
 
-var SiteDataRow = React.createClass({
+var SiteStreamDataRow = React.createClass({
   render: function(){
     var units;
     var label;
@@ -26,4 +26,4 @@ var SiteDataRow = React.createClass({
   }
 })
 
-module.exports = SiteDataRow;
+module.exports = SiteStreamDataRow;

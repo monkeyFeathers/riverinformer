@@ -1,6 +1,9 @@
 var express = require('express');
+var request = require('request');
 
 var app = express();
+
+var weatherRequestURL = 'https://api.forecast.io/forecast/6f1ee742351615e3829b743a9ab82407/37.8267,-122.423'
 
 app.set('port', process.env.PORT || 3000);
 
@@ -15,6 +18,17 @@ app.get('/about', function(req, res){
   res.type('text/plain');
   res.send('About River Informer');
 });
+
+app.get('/weather', function(req,res){
+  request(weatherRequestURL, function (error, response, body) {
+    if (error) {
+      console.error(error);
+    } else {
+      //console.log(body)
+    }
+  }).pipe(res);
+  // res.send('hello')
+})
 
 // Custom 404 page
 app.use(function(req, res) {

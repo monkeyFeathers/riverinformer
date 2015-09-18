@@ -50,6 +50,7 @@
   "dependencies": {
     "express": "^4.13.3",
     "flux": "^2.1.1",
+    "forecastio": "^0.2.0",
     "immutable": "^3.7.5",
     "jQuery": "^1.7.4",
     "jquery": "^2.1.4",
