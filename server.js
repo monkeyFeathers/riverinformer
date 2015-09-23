@@ -1,9 +1,11 @@
 var express = require('express');
 var request = require('request');
+var cheerio = require('cheerio');
+var _ = require('lodash');
 
 var app = express();
 
-var weatherRequestURL = 'https://api.forecast.io/forecast/6f1ee742351615e3829b743a9ab82407/37.8267,-122.423'
+var weatherRequestURL = 'https://api.forecast.io/forecast/6f1ee742351615e3829b743a9ab82407/45.29984346,-122.3539746'
 
 app.set('port', process.env.PORT || 3000);
 
@@ -29,6 +31,18 @@ app.get('/weather', function(req,res){
   }).pipe(res);
   // res.send('hello')
 })
+app.get('/report', function(req, res){
+  var url = "http://www.dfw.state.or.us/rr/willamette/";
+
+  request(url, function(error, response, html){
+    if (!error) {
+      var $ = cheerio.load(html);
+      var list = $(".blue_blockwhite").nextUntil(".blue_blockwhite");
+      var p = list.filter('p');
+      res.json(p.toString())
+    }
+  });
+});
 
 // Custom 404 page
 app.use(function(req, res) {

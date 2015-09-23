@@ -1,24 +1,22 @@
 var React = require('react');
-var RiverSite = require('./RiverSite.react')
+var RiverSite = require('./RiverSite.react');
+var USState = require('./USState.react');
+var Stream = require("./Stream.react")
+var FishingReport = require("./FishingReport.react")
 var RI_App = React.createClass({
-  
-  // getInitialState: function(){
-
-  // },
 
   render: function() {
+    
   return (
-    <div>
-      <RiverSite site={this.props.site} />
+    <div onClick={this._onClick}>
+      <FishingReport />
     </div>
     );
   },
-  // _onChange: function(){
-    
-  // }
 });
 
-
+      // <USState />
+//       <RiverSite site={this.props.site} />
 // var Footer = require('./Footer.react');
 // var Header = require('./Header.react');
 // var MainSection = require('./MainSection.react');

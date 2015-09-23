@@ -2,10 +2,6 @@ var React = require("react");
 var SiteStreamDataTable = require("./SiteStreamDataTable.react");
 var SiteWeatherDataTable = require("./SiteWeatherDataTable.react");
 var USGS = require("../usgs/USGS");
-// var ForecastIo = require('forecastio');
-
-// var forecastIo = new ForecastIo('6f1ee742351615e3829b743a9ab82407');
-
 
 var RiverSite = React.createClass({
   getInitialState: function() {
@@ -39,31 +35,28 @@ var RiverSite = React.createClass({
       }
 
     }.bind(this));
-    // // get/ set weather data
 
-    // $.get(streamRequestURL, function(result) {
-    //   if (this.isMounted()){
-    //     this.setState({
-    //       weatherDataPoints:["weather", "looks", "good"]
-    //     });
-    //   }
-    // }.bind(this));
   },
 render: function(){
   return (
-    <article className={"container col-md-6"}>
+    <article className={"container col-md-12"}>
       <header className={"row"}>
         <h3>{this.state.siteName}</h3>
-        <p>latitude:{this.state.geoLocation.latitude} by longitude:{this.state.geoLocation.longitude}</p>
+        <p>latitude: {this.state.geoLocation.latitude} by longitude: {this.state.geoLocation.longitude}</p>
       </header>
-      <div className={'row stream-table'}>
-        <SiteStreamDataTable siteName={this.state.siteName} 
-        riverDataPoints={this.state.riverDataPoints} 
-        geoLocation={this.state.geoLocation}
-        tableTitle={'Stream Data'} />
+      <div className={'col-md-6'}>
+        <h4>Fishing Reports</h4>
       </div>
-      <div className={'row weather-table'}>
-        <SiteWeatherDataTable tableTitle={'Weather Data'} />
+      <div className={'col-md-6'}>
+        <div className={'row stream-table'}>
+          <SiteStreamDataTable siteName={this.state.siteName} 
+          riverDataPoints={this.state.riverDataPoints} 
+          geoLocation={this.state.geoLocation}
+          tableTitle={'Stream Data'} />
+        </div>
+        <div className={'row weather-table'}>
+          <SiteWeatherDataTable tableTitle={'Weather Data'} />
+        </div>
       </div>
     </article>
     );

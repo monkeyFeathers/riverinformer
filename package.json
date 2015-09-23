@@ -48,6 +48,7 @@
   },
   "homepage": "https://github.com/monkeyFeathers/riverinformer#readme",
   "dependencies": {
+    "cheerio": "^0.19.0",
     "express": "^4.13.3",
     "flux": "^2.1.1",
     "forecastio": "^0.2.0",
