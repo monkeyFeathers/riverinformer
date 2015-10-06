@@ -45,26 +45,34 @@ var USGS = {
       return simpleObj;
     },
 
-  getOregonStreamName: function(USGSSiteName) {
-    
-    if (USGSSiteName.match("WILLAMETTE")) {
-      return "WILLAMETTE RIVER"
+  getStreamName: function(USGSSiteName) {
+    var orSpecialCases = [ 
+      {"match":"lake creek", "output":"Lake Creek"},
+      {"match":"Lake Billy Chinook", "output":"Lake Billy Chinook"},
+      {"match":"Star Gulch near ruch", "output":"Star Gulch near Ruch, OR"},
+      {"match":"Oak Grove Fork", "output":"Clackamas River"},
+      {"match":"Klamath Straits Drain", "output":"Klamath Straits Drain"},
+      {"match":"Coast Fork Willamette", "output":"Coast Fork Willamette River"}
+    ];
+    var specialOutput;
+    _.forEach(orSpecialCases, function(specCase){
+      if (USGSSiteName.match(RegExp(specCase.match,'i'))) {      
+        specialOutput = specCase.output;
+      } 
+    })
+    if (specialOutput) {
+      return specialOutput;
+    } else {    
+      var nameFrag = USGSSiteName.split(' ');
+      var waterTerm = _.findIndex(nameFrag, function(frag){
+        return frag.match(/canal|creek|dam|lake|pond|river|slough/i);
+      })
+      // console.log(nameFrag.slice(0,waterTerm+1)+" | "+ USGSSiteName)
+      return nameFrag.slice(0,waterTerm+1).join(' ');
     }
-    var nameFrag = USGSSiteName.split(' ');   
-    if (nameFrag[0].match(/North|SOUTH|EAST|COAST|MIDDLE|WEST/i)){
-      if (nameFrag[1].match(/fork/i)) {
-        if ([nameFrag[2], nameFrag[3]].join(' ').match(/OF M/i)){
-          return [nameFrag[5], nameFrag[6]].join(' ');
-        } else {
-          return [nameFrag[2], nameFrag[3]].join(' ');
-        }
-      } else {
-        return [nameFrag[1], nameFrag[2]].join(' ');
-      }
-    } else {
-      return [nameFrag[0], nameFrag[1]].join(' ');
-    }
+
   },
+
   cleanDataLabel: function(simplifiedUSGSobj){
     var units;
     var label;
@@ -85,6 +93,61 @@ var USGS = {
   toTitleCase: function(string) {
     var str = string.toLowerCase()
     return str.split(" ").map(function(i){return i[0].toUpperCase() + i.substring(1)}).join(" ");
+  },
+
+  cleanSiteNames: function(sites) {
+    var sites = _.sortBy(_.unique(sites, 'siteCode'), 'siteName');
+
+    _.forEach(sites, function(site) {
+      var nameWords = site.siteName.split(" ");
+      nameWords.forEach(function(nameFrag){
+        switch (nameFrag) {
+          case 'CR':
+            nameWords[nameWords.indexOf('CR')] = 'CREEK';
+            break;
+          case 'CRK':
+            nameWords[nameWords.indexOf('CRK')] = 'CREEK';
+            break;
+          case 'FK':
+            nameWords[nameWords.indexOf('FK')] = 'FORK';
+            break;
+          case 'M':
+            nameWords[nameWords.indexOf('M')] = 'MIDDLE';
+            break;            
+          case 'MF':
+            nameWords[nameWords.indexOf('MF')] = 'MIDDLE FORK';
+            break;
+          case 'N':
+            nameWords[nameWords.indexOf('N')] = 'NORTH';
+            break;
+          case 'N.UMPQUA':
+            nameWords[nameWords.indexOf('N.UMPQUA')] = 'NORTH UMPQUA';
+            break;
+          case 'NF':
+            nameWords[nameWords.indexOf('NF')] = 'NORTH FORK';
+            break;
+          case 'NO':
+            nameWords[nameWords.indexOf('NO')] = 'NORTH';
+            break;
+          case 'R':
+            nameWords[nameWords.indexOf('R')] = 'RIVER';
+            break;
+          case 'SO':
+            nameWords[nameWords.indexOf('SO')] = 'SOUTH';
+            break;
+        }
+      })
+
+      site.siteName = nameWords.join(" ");
+    })
+
+    sites = _.reject(sites, function(site){
+      return site.siteCode.length > 8;
+    });
+    _.forEach(sites, function(site){
+      site.siteName = USGS.toTitleCase(site.siteName);
+    });
+    return sites
   }
 
 }

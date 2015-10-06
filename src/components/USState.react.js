@@ -11,6 +11,7 @@ var USState = React.createClass({
       siteGroups: {},
       selectedRiverName: '',
       siteGroupNames: [],
+      reports: {}
     }
   },
 
@@ -18,67 +19,24 @@ var USState = React.createClass({
     // get all sites for specified US State and simplify
     // TODO: cache these sites and check for periodic updates 
     var stateSitesRequestURL = 'http://waterservices.usgs.gov/nwis/iv/?format=json';
-    stateSitesRequestURL += '&siteType=ST&stateCd=or';
+    stateSitesRequestURL += '&siteType=ST&stateCd='+this.props.usState;
 
-    $.get(stateSitesRequestURL, function(result) {
-      var USGSResponseObj = result;
+    $.when($.get(stateSitesRequestURL), $.get('/report')).done(function(sites, reports) {
+      
+      // TODO: New interface for USGS
+      // TODO: Move all USGS formatting to the module
+      var USGSResponseObj = sites[0];
       var USGSTimeSeriesItems = USGSResponseObj.value.timeSeries;
+      
       var sites = [];
       USGSTimeSeriesItems.forEach(function(site){
         sites.push(USGS.simplifySiteList(site));
       });
-      sites = _.sortBy(_.unique(sites, 'siteCode'), 'siteName');
 
-      _.forEach(sites, function(site) {
-        var nameWords = site.siteName.split(" ");
-        nameWords.forEach(function(nameFrag){
-          switch (nameFrag) {
-            case 'CR':
-              nameWords[nameWords.indexOf('CR')] = 'CREEK';
-              break;
-            case 'CRK':
-              nameWords[nameWords.indexOf('CRK')] = 'CREEK';
-              break;
-            case 'FK':
-              nameWords[nameWords.indexOf('FK')] = 'FORK';
-              break;
-            case 'M':
-              nameWords[nameWords.indexOf('M')] = 'MIDDLE';
-              break;            case 'MF':
-              nameWords[nameWords.indexOf('MF')] = 'MIDDLE FORK';
-              break;
-            case 'N':
-              nameWords[nameWords.indexOf('N')] = 'NORTH';
-              break;
-            case 'N.UMPQUA':
-              nameWords[nameWords.indexOf('N.UMPQUA')] = 'NORTH UMPQUA';
-              break;
-            case 'NF':
-              nameWords[nameWords.indexOf('NF')] = 'NORTH FORK';
-              break;
-            case 'NO':
-              nameWords[nameWords.indexOf('NO')] = 'NORTH';
-              break;
-            case 'R':
-              nameWords[nameWords.indexOf('R')] = 'RIVER';
-              break;
-            case 'SO':
-              nameWords[nameWords.indexOf('SO')] = 'SOUTH';
-              break;
-          }
-        })
+      sites = USGS.cleanSiteNames(sites)
 
-        site.siteName = nameWords.join(" ");
-      })
-
-      sites = _.reject(sites, function(site){
-        return site.siteCode.length > 8;
-      });
-      _.forEach(sites, function(site){
-        site.siteName = USGS.toTitleCase(site.siteName);
-      });
       var siteGroups = _.groupBy(sites, function(site) {
-        return USGS.getOregonStreamName(site.siteName)
+        return USGS.getStreamName(site.siteName)
       });
       var sortedSiteGroupsKeys = _.keys(siteGroups).sort();
       var sortedSiteGroups = {}
@@ -89,22 +47,26 @@ var USState = React.createClass({
       if (this.isMounted()) {
         this.setState({
           siteGroups: sortedSiteGroups,
-          siteGroupNames: _.keys(siteGroups)
+          siteGroupNames: _.keys(siteGroups),
+          reports: reports[0]
         });
       }
 
     }.bind(this));
+
   },
 
   render: function() {
-    
+    window.siteGroupNames = this.state.siteGroupNames;
+    window._ = _;
     if (this.state.selectedRiverName) {
       var content = <Stream 
         streamName={this.state.selectedRiverName} 
-        sites={this.state.siteGroups[this.state.selectedRiverName]}/>
+        sites={this.state.siteGroups[this.state.selectedRiverName]}
+        reports={this.state.reports}/>
         var breadCrumb = <em><a href="#" id="breadCrumb">All Oregon</a></em>
     } else {
-      var content = <StreamList list={this.state.siteGroupNames}/>
+      var content = <StreamList list={this.state.siteGroupNames} />
       var breadCrumb = "";
     }
 

@@ -61,23 +61,30 @@ var React = require('react');
 var FishingReport = React.createClass({
   displayName: 'FishingReport',
 
-  getInitialState: function getInitialState() {
-    return { report: {} };
-  },
-  componentDidMount: function componentDidMount() {
-
-    var reportURL = "http://www.dfw.state.or.us/rr/willamette/";
-    $.get(reportURL, (function (result) {
-
-      if (this.isMounted()) {
-        this.setState({
-          report: ''
-        });
-      }
-    }).bind(this));
-  },
-
-  render: function render() {}
+  render: function render() {
+    var report = this.props.report;
+    return React.createElement(
+      'div',
+      null,
+      React.createElement(
+        'h4',
+        null,
+        report.location
+      ),
+      React.createElement(
+        'h6',
+        null,
+        report.species
+      ),
+      report.report.map(function (rep) {
+        return React.createElement(
+          'p',
+          null,
+          rep
+        );
+      })
+    );
+  }
 
 });
 
@@ -97,8 +104,8 @@ var RI_App = React.createClass({
 
     return React.createElement(
       'div',
-      { onClick: this._onClick },
-      React.createElement(FishingReport, null)
+      null,
+      React.createElement(USState, { usState: 'or' })
     );
   }
 });
@@ -503,6 +510,7 @@ var React = require('react');
 var _ = require('lodash');
 var USGS = require("../usgs/USGS");
 var SiteSummary = require("./SiteSummary.react");
+var FishingReport = require("./FishingReport.react");
 
 var Stream = React.createClass({
   displayName: 'Stream',
@@ -514,6 +522,7 @@ var Stream = React.createClass({
   },
 
   componentDidMount: function componentDidMount() {
+    window.onpopstate = this.onBackButtonEvent;
     // get stream data
     var streamRequestURL = 'http://waterservices.usgs.gov/nwis/iv/?format=json';
     streamRequestURL += '&parameterCd=00010,00060,00065';
@@ -536,6 +545,37 @@ var Stream = React.createClass({
     }).bind(this));
   },
   render: function render() {
+    var reportBodies = [];
+    var streamName = this.props.streamName;
+    var zones = this.props.reports;
+    var streamNameFrags = streamName.split(" ");
+    _.forEach(zones, function (reports, zone) {
+      console.group(zone);
+      _.forEach(reports, function (locationReport) {
+        var matchCount = 0;
+        console.log(streamName + " | " + locationReport.location);
+        _.forEach(streamNameFrags, function (frag) {
+          if (locationReport.location.match(RegExp(frag.toLowerCase(), 'i'))) {
+            matchCount++;
+          }
+        });
+        console.log(matchCount);
+        if (matchCount / streamNameFrags.length == 1) {
+
+          console.group("match condition met");
+          console.log("reports prior:");
+          console.log(reportBodies);
+          reportBodies.push(locationReport);
+          console.log('reports after:');
+          console.log(reportBodies);
+          console.log("location report:");
+          console.log(locationReport);
+          console.groupEnd();
+        }
+      });
+      console.groupEnd();
+    });
+
     var sites = [];
     var siteDataPoints = this.state.siteDataPoints;
     this.props.sites.forEach(function (site) {
@@ -545,13 +585,16 @@ var Stream = React.createClass({
         site: site }));
     });
     var content = siteDataPoints ? { sites: sites } : React.createElement('img', { src: '/img/gps.gif' });
+    var reportContent = _.map(reportBodies, function (report) {
+      return React.createElement(FishingReport, { report: report });
+    });
     return React.createElement(
       'div',
       { className: 'col-md-12', onClick: this._onClick },
       React.createElement(
         'h4',
         null,
-        this.props.streamName
+        streamName
       ),
       React.createElement(
         'div',
@@ -560,7 +603,9 @@ var Stream = React.createClass({
           'h5',
           null,
           'Fishing Reports'
-        )
+        ),
+        console.log(reportBodies),
+        reportContent
       ),
       React.createElement(
         'div',
@@ -574,13 +619,16 @@ var Stream = React.createClass({
       )
     );
   },
+  onBackButtonEvent: function onBackButtonEvent() {
+    this._onClick();
+  },
   _onClick: function _onClick(event) {
     event.stopPropagation();
   }
 });
 
 module.exports = Stream;
-},{"../usgs/USGS":14,"./SiteSummary.react":9,"lodash":15,"react":170}],12:[function(require,module,exports){
+},{"../usgs/USGS":14,"./FishingReport.react":3,"./SiteSummary.react":9,"lodash":15,"react":170}],12:[function(require,module,exports){
 "use strict";
 
 var React = require("react");
@@ -654,7 +702,8 @@ var USState = React.createClass({
     return {
       siteGroups: {},
       selectedRiverName: '',
-      siteGroupNames: []
+      siteGroupNames: [],
+      reports: {}
     };
   },
 
@@ -662,67 +711,24 @@ var USState = React.createClass({
     // get all sites for specified US State and simplify
     // TODO: cache these sites and check for periodic updates
     var stateSitesRequestURL = 'http://waterservices.usgs.gov/nwis/iv/?format=json';
-    stateSitesRequestURL += '&siteType=ST&stateCd=or';
+    stateSitesRequestURL += '&siteType=ST&stateCd=' + this.props.usState;
 
-    $.get(stateSitesRequestURL, (function (result) {
-      var USGSResponseObj = result;
+    $.when($.get(stateSitesRequestURL), $.get('/report')).done((function (sites, reports) {
+
+      // TODO: New interface for USGS
+      // TODO: Move all USGS formatting to the module
+      var USGSResponseObj = sites[0];
       var USGSTimeSeriesItems = USGSResponseObj.value.timeSeries;
+
       var sites = [];
       USGSTimeSeriesItems.forEach(function (site) {
         sites.push(USGS.simplifySiteList(site));
       });
-      sites = _.sortBy(_.unique(sites, 'siteCode'), 'siteName');
 
-      _.forEach(sites, function (site) {
-        var nameWords = site.siteName.split(" ");
-        nameWords.forEach(function (nameFrag) {
-          switch (nameFrag) {
-            case 'CR':
-              nameWords[nameWords.indexOf('CR')] = 'CREEK';
-              break;
-            case 'CRK':
-              nameWords[nameWords.indexOf('CRK')] = 'CREEK';
-              break;
-            case 'FK':
-              nameWords[nameWords.indexOf('FK')] = 'FORK';
-              break;
-            case 'M':
-              nameWords[nameWords.indexOf('M')] = 'MIDDLE';
-              break;case 'MF':
-              nameWords[nameWords.indexOf('MF')] = 'MIDDLE FORK';
-              break;
-            case 'N':
-              nameWords[nameWords.indexOf('N')] = 'NORTH';
-              break;
-            case 'N.UMPQUA':
-              nameWords[nameWords.indexOf('N.UMPQUA')] = 'NORTH UMPQUA';
-              break;
-            case 'NF':
-              nameWords[nameWords.indexOf('NF')] = 'NORTH FORK';
-              break;
-            case 'NO':
-              nameWords[nameWords.indexOf('NO')] = 'NORTH';
-              break;
-            case 'R':
-              nameWords[nameWords.indexOf('R')] = 'RIVER';
-              break;
-            case 'SO':
-              nameWords[nameWords.indexOf('SO')] = 'SOUTH';
-              break;
-          }
-        });
+      sites = USGS.cleanSiteNames(sites);
 
-        site.siteName = nameWords.join(" ");
-      });
-
-      sites = _.reject(sites, function (site) {
-        return site.siteCode.length > 8;
-      });
-      _.forEach(sites, function (site) {
-        site.siteName = USGS.toTitleCase(site.siteName);
-      });
       var siteGroups = _.groupBy(sites, function (site) {
-        return USGS.getOregonStreamName(site.siteName);
+        return USGS.getStreamName(site.siteName);
       });
       var sortedSiteGroupsKeys = _.keys(siteGroups).sort();
       var sortedSiteGroups = {};
@@ -733,18 +739,21 @@ var USState = React.createClass({
       if (this.isMounted()) {
         this.setState({
           siteGroups: sortedSiteGroups,
-          siteGroupNames: _.keys(siteGroups)
+          siteGroupNames: _.keys(siteGroups),
+          reports: reports[0]
         });
       }
     }).bind(this));
   },
 
   render: function render() {
-
+    window.siteGroupNames = this.state.siteGroupNames;
+    window._ = _;
     if (this.state.selectedRiverName) {
       var content = React.createElement(Stream, {
         streamName: this.state.selectedRiverName,
-        sites: this.state.siteGroups[this.state.selectedRiverName] });
+        sites: this.state.siteGroups[this.state.selectedRiverName],
+        reports: this.state.reports });
       var breadCrumb = React.createElement(
         'em',
         null,
@@ -841,26 +850,26 @@ var USGS = {
     return simpleObj;
   },
 
-  getOregonStreamName: function getOregonStreamName(USGSSiteName) {
-
-    if (USGSSiteName.match("WILLAMETTE")) {
-      return "WILLAMETTE RIVER";
-    }
-    var nameFrag = USGSSiteName.split(' ');
-    if (nameFrag[0].match(/North|SOUTH|EAST|COAST|MIDDLE|WEST/i)) {
-      if (nameFrag[1].match(/fork/i)) {
-        if ([nameFrag[2], nameFrag[3]].join(' ').match(/OF M/i)) {
-          return [nameFrag[5], nameFrag[6]].join(' ');
-        } else {
-          return [nameFrag[2], nameFrag[3]].join(' ');
-        }
-      } else {
-        return [nameFrag[1], nameFrag[2]].join(' ');
+  getStreamName: function getStreamName(USGSSiteName) {
+    var orSpecialCases = [{ "match": "lake creek", "output": "Lake Creek" }, { "match": "Lake Billy Chinook", "output": "Lake Billy Chinook" }, { "match": "Star Gulch near ruch", "output": "Star Gulch near Ruch, OR" }, { "match": "Oak Grove Fork", "output": "Clackamas River" }, { "match": "Klamath Straits Drain", "output": "Klamath Straits Drain" }, { "match": "Coast Fork Willamette", "output": "Coast Fork Willamette River" }];
+    var specialOutput;
+    _.forEach(orSpecialCases, function (specCase) {
+      if (USGSSiteName.match(RegExp(specCase.match, 'i'))) {
+        specialOutput = specCase.output;
       }
+    });
+    if (specialOutput) {
+      return specialOutput;
     } else {
-      return [nameFrag[0], nameFrag[1]].join(' ');
+      var nameFrag = USGSSiteName.split(' ');
+      var waterTerm = _.findIndex(nameFrag, function (frag) {
+        return frag.match(/canal|creek|dam|lake|pond|river|slough/i);
+      });
+      // console.log(nameFrag.slice(0,waterTerm+1)+" | "+ USGSSiteName)
+      return nameFrag.slice(0, waterTerm + 1).join(' ');
     }
   },
+
   cleanDataLabel: function cleanDataLabel(simplifiedUSGSobj) {
     var units;
     var label;
@@ -883,6 +892,61 @@ var USGS = {
     return str.split(" ").map(function (i) {
       return i[0].toUpperCase() + i.substring(1);
     }).join(" ");
+  },
+
+  cleanSiteNames: function cleanSiteNames(sites) {
+    var sites = _.sortBy(_.unique(sites, 'siteCode'), 'siteName');
+
+    _.forEach(sites, function (site) {
+      var nameWords = site.siteName.split(" ");
+      nameWords.forEach(function (nameFrag) {
+        switch (nameFrag) {
+          case 'CR':
+            nameWords[nameWords.indexOf('CR')] = 'CREEK';
+            break;
+          case 'CRK':
+            nameWords[nameWords.indexOf('CRK')] = 'CREEK';
+            break;
+          case 'FK':
+            nameWords[nameWords.indexOf('FK')] = 'FORK';
+            break;
+          case 'M':
+            nameWords[nameWords.indexOf('M')] = 'MIDDLE';
+            break;
+          case 'MF':
+            nameWords[nameWords.indexOf('MF')] = 'MIDDLE FORK';
+            break;
+          case 'N':
+            nameWords[nameWords.indexOf('N')] = 'NORTH';
+            break;
+          case 'N.UMPQUA':
+            nameWords[nameWords.indexOf('N.UMPQUA')] = 'NORTH UMPQUA';
+            break;
+          case 'NF':
+            nameWords[nameWords.indexOf('NF')] = 'NORTH FORK';
+            break;
+          case 'NO':
+            nameWords[nameWords.indexOf('NO')] = 'NORTH';
+            break;
+          case 'R':
+            nameWords[nameWords.indexOf('R')] = 'RIVER';
+            break;
+          case 'SO':
+            nameWords[nameWords.indexOf('SO')] = 'SOUTH';
+            break;
+        }
+      });
+
+      site.siteName = nameWords.join(" ");
+    });
+
+    sites = _.reject(sites, function (site) {
+      return site.siteCode.length > 8;
+    });
+    _.forEach(sites, function (site) {
+      site.siteName = USGS.toTitleCase(site.siteName);
+    });
+    return sites;
   }
 
 };

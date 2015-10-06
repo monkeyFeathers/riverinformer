@@ -1,7 +1,10 @@
 var express = require('express');
-var request = require('request');
-var cheerio = require('cheerio');
+
+var Promise = require('bluebird');
+var request = Promise.promisify(require("request"));
 var _ = require('lodash');
+var ReportHelper = require("./src/utilities/ReportHelper");
+var OREGON_SITES = require('./cache/oregon_sites');
 
 var app = express();
 
@@ -32,50 +35,57 @@ app.get('/weather', function(req,res){
   // res.send('hello')
 })
 app.get('/report', function(req, res){
-  var url = "http://www.dfw.state.or.us/rr/willamette/";
+  var nwZone = request("http://www.dfw.state.or.us/rr/northwest/").get(1)
+  var swZone = request("http://www.dfw.state.or.us/rr/southwest/").get(1)
+  var wZone = request("http://www.dfw.state.or.us/rr/willamette/").get(1)
+  var ctZone = request("http://www.dfw.state.or.us/rr/central/").get(1)
+  var seZone = request("http://www.dfw.state.or.us/rr/southeast/").get(1)
+  var neZone = request("http://www.dfw.state.or.us/rr/northeast/").get(1)
+  var snkZone = request("http://www.dfw.state.or.us/rr/snake").get(1)
+  var colZone = request("http://www.dfw.state.or.us/rr/columbia/").get(1)
+  var marineZone = request("http://www.dfw.state.or.us/rr/marine/").get(1)
 
-  request(url, function(error, response, html){
-    if (!error) {
-      var $ = cheerio.load(html);
-      var list = $(".blue_blockwhite").nextAll();
-      var p = list.filter('p');
-      var count;
-      p.each(function(i){
-        if ($(this).hasClass('blue_blockwhite')) {
-          if (!count){count = i;}
-        }
-      });
-
-      p = p.slice(0,count);
-
-      var text = []
-      p.each(function(){
-        text.push($(this).text())
-      });
-      var cleanText = text.map(function(val, ind, array){
-        return _.compact(val.split(" ")).join(" ").split(/\r/).join('').split(/\n/).join('');
-      })
-
-      var reportIndices = _.compact(cleanText.map(function(el,i, array){
-        if (el.match(/^([A-Z]+\s)+([A-Z]+:)/)){
-          return i;
-        }
-      }));
-
-      var reports = _.compact(reportIndices.map(function(el, i, array){
-        if (i !== 0){   
-          return cleanText.slice(array[i-1],el)
-        }
-      }));
-
-      var reportCollection = reports.map(function(val, ind, array){
-        var locSpec = val[0].split(":");
-        return {"location" : locSpec[0], "species": locSpec[1], "report":_.rest(val)}
-      })
-      res.json(reportCollection)
-    }
+  Promise.join(nwZone, swZone,wZone,ctZone,seZone,neZone,snkZone,colZone,marineZone, 
+    function(nw,sw,w,ct,se,ne,snk,col,marine){
+      var extract = ReportHelper.extractReports;
+      var reportCollection = { 
+        "Northwest_zone" : extract(nw),
+        "Soutwest_zone" : extract(sw),
+        "Willamette_zone" : extract(w),
+        "Central_zone" : extract(ct),
+        "Southeast_zone" : extract(se),
+        "Northeast_zone" : extract(ne),
+        "Snake_zone" : extract(snk),
+        "Columbia_zone" : extract(col),
+        "Marine_zone" : extract(marine)
+      }
+      return reportCollection;
+  }).then(function(reportCollection){
+    res.json(reportCollection)
+  }).catch(function(err){
+    console.log(err);
   });
 });
+
+// app.get('/save_sites', function(req, res){
+//   var url = 'http://waterservices.usgs.gov/nwis/iv/?format=json';
+//     url += '&siteType=ST&stateCd=or';
+//   request(url, function(error, response, body){
+//     var USGSResponseObj = JSON.parse(body);
+//     var USGSTimeSeriesItems = USGSResponseObj.value.timeSeries;
+//     var sites = [];
+//     USGSTimeSeriesItems.forEach(function(site){
+//       sites.push(USGS.simplifySiteList(site));
+//     });
+      
+//     sites = USGS.cleanSiteNames(sites)
+//     fs.writeFile('oregonSites.js', JSON.stringify(sites), function (err) {
+//       if (err) throw err;
+//       console.log('It\'s saved!');
+//     });
+//     res.json(sites);
+//   });
+// })
 
 // Custom 404 page
 app.use(function(req, res) {

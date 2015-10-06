@@ -1,27 +1,21 @@
 var React = require('react');
 
 var FishingReport = React.createClass({
-  getInitialState: function(){
-    return {report:{}}
-  },
-  componentDidMount: function(){
-    
-    var reportURL = "http://www.dfw.state.or.us/rr/willamette/"
-    $.get(reportURL, function(result){
 
-      if (this.isMounted()){
-        this.setState({
-          report: ''
-        });
-      }
-
-    }.bind(this));
-  },
 
   render: function() {
-
+    var report = this.props.report;
+    return(
+      <div>
+        <h4>{report.location}</h4>
+        <h6>{report.species}</h6>
+        {report.report.map(function(rep){
+          return <p>{rep}</p>
+        })}
+      </div>
+      )
   }
 
 });
 
-module.exports = FishingReport
+module.exports = FishingReport;

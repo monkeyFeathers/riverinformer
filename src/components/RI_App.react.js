@@ -8,8 +8,8 @@ var RI_App = React.createClass({
   render: function() {
     
   return (
-    <div onClick={this._onClick}>
-      <FishingReport />
+    <div>
+      <USState usState={'or'}/>
     </div>
     );
   },
