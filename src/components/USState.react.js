@@ -71,14 +71,13 @@ var USState = React.createClass({
     }
 
     return (
-      <div onClick={this.onClick}>
-        <div>{breadCrumb}</div>
-        <div>{content}</div>
-      </div>
+      <article onClick={this.onClick}>
+        <div className="row"><div className="col-md-12">{breadCrumb}</div></div>
+        {content}
+      </article>
     )
   },
   onClick: function(event){
-    console.log(event.target)
     if (event.target.hasAttribute('id','breadCrumb')) {
       this.setState({
         selectedRiverName: ''

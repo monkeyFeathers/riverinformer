@@ -42,31 +42,17 @@ var Stream = React.createClass({
     var zones = this.props.reports;
     var streamNameFrags = streamName.split(" ");
     _.forEach(zones, function(reports, zone){
-      console.group(zone)
       _.forEach(reports, function(locationReport){
         var matchCount = 0;
-        console.log(streamName+" | "+locationReport.location)
         _.forEach(streamNameFrags, function(frag){
           if (locationReport.location.match(RegExp(frag.toLowerCase(), 'i'))) {
             matchCount ++;
           }
         })
-        console.log(matchCount)
         if (matchCount/streamNameFrags.length == 1) {
-          
-          console.group("match condition met");
-          console.log("reports prior:")
-          console.log(reportBodies);
           reportBodies.push(locationReport)
-          console.log('reports after:')
-          console.log(reportBodies)
-          console.log("location report:")
-          console.log(locationReport)
-          console.groupEnd()
         }
-
       })
-      console.groupEnd();
     })
 
     var sites = [];
@@ -82,16 +68,17 @@ var Stream = React.createClass({
       return(<FishingReport report={report}/>)
     })
     return (
-      <div className={'col-md-12'} onClick={this._onClick}>
+      <div onClick={this._onClick}>
         <h4>{streamName}</h4>
-        <div className={"col-md-6"}>
-          <h5>Fishing Reports</h5>
-          {console.log(reportBodies)}
-          {reportContent}
-        </div>
-        <div className={"col-md-6"} >
-          <h5>Sites</h5>
-          {content}
+        <div className="row">
+          <div className={"col-md-6"}>
+            <h5>Fishing Reports</h5>
+            {reportContent}
+          </div>
+          <div className={"col-md-6"} >
+            <h5>Sites</h5>
+            {content}
+          </div>
         </div>
       </div>
 

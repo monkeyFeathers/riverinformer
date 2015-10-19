@@ -2,6 +2,7 @@ var React = require("react");
 var SiteStreamDataTable = require("./SiteStreamDataTable.react");
 var SiteWeatherDataTable = require("./SiteWeatherDataTable.react");
 var USGS = require("../usgs/USGS");
+var odfwHelper = require("../odfw/helper");
 
 var RiverSite = React.createClass({
   getInitialState: function() {
@@ -26,6 +27,12 @@ var RiverSite = React.createClass({
       USGSTimeSeriesItems.forEach(function(item){
         riverDataPoints.push(USGS.simplify(item));
       });
+      var zoneSites = riverDataPoints.map(function(val,ind,arry){
+        var zone = "";
+        return val.zone = zone; 
+      })
+      window.zoneSites = zoneSites;
+
       if (this.isMounted()) {
         this.setState({
           siteName: riverDataPoints[0].siteName,

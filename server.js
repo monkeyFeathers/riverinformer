@@ -1,10 +1,10 @@
 var express = require('express');
-
 var Promise = require('bluebird');
 var request = Promise.promisify(require("request"));
 var _ = require('lodash');
 var ReportHelper = require("./src/utilities/ReportHelper");
 var OREGON_SITES = require('./cache/oregon_sites');
+var ZoneBoundaries = require("./src/odfw/ZoneBoundaries");
 
 var app = express();
 
@@ -66,6 +66,9 @@ app.get('/report', function(req, res){
     console.log(err);
   });
 });
+app.get('/zones', function(req,res){
+  res.json(ZoneBoundaries);
+})
 
 // app.get('/save_sites', function(req, res){
 //   var url = 'http://waterservices.usgs.gov/nwis/iv/?format=json';

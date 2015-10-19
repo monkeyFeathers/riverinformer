@@ -11,7 +11,7 @@ var React = require('react');
 var RI_App = require('./components/RI_App.react');
 
 React.render(
-  <RI_App site={'14210000'} />,
+  <RI_App />,
   document.getElementById('main')
 );
 

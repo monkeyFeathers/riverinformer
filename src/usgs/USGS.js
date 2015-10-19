@@ -1,4 +1,6 @@
 var _ = require("lodash");
+var odfwHelper = require("../odfw/helper");
+var ZoneBounds = require("../odfw/RevisedZoneBoundaries");
 function decodeHtml(html) {
   if (html.match("&#176;")){ // degree symbol
     return html.split("&#176;").join("°")
@@ -22,19 +24,20 @@ var USGS = {
       var simpleObj = {}
       simpleObj.siteName = this.toTitleCase(USGSTimeSeriesItem.sourceInfo.siteName);
       simpleObj.siteCode = USGSTimeSeriesItem.sourceInfo.siteCode[0].value;
-      simpleObj.geoLocation = USGSTimeSeriesItem.sourceInfo.geoLocation.geogLocation
+      simpleObj.geoLocation = USGSTimeSeriesItem.sourceInfo.geoLocation.geogLocation;
       simpleObj.dateTime = USGSTimeSeriesItem.values[0].value[0].dateTime;
       simpleObj.value = USGSTimeSeriesItem.values[0].value[0].value;
-      simpleObj.units = decodeHtml(USGSTimeSeriesItem.variable.variableName)
-      simpleObj.parameter = ''
+      simpleObj.units = decodeHtml(USGSTimeSeriesItem.variable.variableName);
+      simpleObj.parameter = '';
       for (var param in PARAMETER_CODES) {
         if (PARAMETER_CODES[param] === USGSTimeSeriesItem.name.split(":")[2]) {
           simpleObj.parameter = param;
           break;
         };
       };
-      simpleObj.formattedData = this.cleanDataLabel(simpleObj)
-
+      simpleObj.formattedData = this.cleanDataLabel(simpleObj);
+      simpleObj.zone = this.getZone(simpleObj);
+      console.log(simpleObj.zone)
       return simpleObj;
     },
     simplifySiteList: function(USGS_Site) {
@@ -42,6 +45,7 @@ var USGS = {
       simpleObj.siteName = USGS_Site.sourceInfo.siteName;
       simpleObj.siteCode = USGS_Site.sourceInfo.siteCode[0].value;
       simpleObj.geoLocation = USGS_Site.sourceInfo.geoLocation.geogLocation
+      simpleObj.zone = this.getZone(simpleObj);
       return simpleObj;
     },
 
@@ -148,6 +152,38 @@ var USGS = {
       site.siteName = USGS.toTitleCase(site.siteName);
     });
     return sites
+  },
+  getZone: function(site){
+    var swBound = odfwHelper.getCoordinates("Southwest Zone Boundary Line (rough)").reverse(),
+        seBound = odfwHelper.getCoordinates("Southeast Zone Boundary Line (rough)").reverse(),
+        nwBound = odfwHelper.getCoordinates("Northwest Zone Boundary Line (Rough)").reverse(),
+        cBound = odfwHelper.getCoordinates("Central Zone Boundary Line (rough)"),
+        wBound = odfwHelper.getCoordinates("Willamette Zone East Boundary Line (Rough)").reverse(),
+        zone = "";
+
+    // Begin site checking
+    var checkOrientation = odfwHelper.orientToBoundary(site, seBound);
+
+    switch (checkOrientation.orientation) {
+      case "East of line":
+        zone = "Southeast";
+        break;
+      case "West of line":
+        checkOrientation = odfwHelper.orientToBoundary(site, swBound);
+        switch(checkOrientation.orientation){
+          case "East of line":
+            zone = "Southwest";
+            break;
+          default:
+            zone = odfwHelper.checkBounds(site, nwBound, wBound, cBound)
+            break;
+        }
+        break;
+      case "Not in range":
+        zone = odfwHelper.checkBounds(site, nwBound, wBound, cBound)
+        break;
+    }
+    return zone;
   }
 
 }
