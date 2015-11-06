@@ -732,8 +732,6 @@ var USState = React.createClass({
 
 module.exports = USState;
 },{"../usgs/USGS":16,"./River.react":5,"./Stream.react":11,"./StreamList.react":12,"lodash":17,"react":172}],14:[function(require,module,exports){
-"use strict";
-
 var ZoneBoundaries = {
     "type": "FeatureCollection",
     "features": [{
@@ -785,14 +783,12 @@ var ZoneBoundaries = {
 };
 module.exports = ZoneBoundaries;
 },{}],15:[function(require,module,exports){
-"use strict";
-
 var ZoneBounds = require("./RevisedZoneBoundaries");
 var _ = require("lodash");
 
 var Helper = {
 
-  getCoordinates: function getCoordinates(name) {
+  getCoordinates: function (name) {
     var rawCoordinates,
         sortedCoordinates,
         coordinates = [];
@@ -809,7 +805,7 @@ var Helper = {
     return coordinates;
   },
 
-  orientToBoundary: function orientToBoundary(site, points) {
+  orientToBoundary: function (site, points) {
 
     var siteCoords = {
       "latitude": site.geoLocation.latitude,
@@ -850,7 +846,7 @@ var Helper = {
       }
     };
   },
-  checkBounds: function checkBounds(site, nwBound, wBound, cBound) {
+  checkBounds: function (site, nwBound, wBound, cBound) {
     var zone = "";
     // add points above to settle not in range issues
     // This will have to be reconciled with columbia river and snake river sites (later)
@@ -894,8 +890,6 @@ var Helper = {
 };
 module.exports = Helper;
 },{"./RevisedZoneBoundaries":14,"lodash":17}],16:[function(require,module,exports){
-"use strict";
-
 var _ = require("lodash");
 var odfwHelper = require("../odfw/helper");
 var ZoneBounds = require("../odfw/RevisedZoneBoundaries");
@@ -920,7 +914,7 @@ var PARAMETER_CODES = {
 var Base_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json';
 
 var USGS = {
-  simplify: function simplify(USGSTimeSeriesItem) {
+  simplify: function (USGSTimeSeriesItem) {
     var simpleObj = {};
     simpleObj.siteName = this.toTitleCase(USGSTimeSeriesItem.sourceInfo.siteName);
     simpleObj.siteCode = USGSTimeSeriesItem.sourceInfo.siteCode[0].value;
@@ -940,7 +934,7 @@ var USGS = {
     console.log(simpleObj.zone);
     return simpleObj;
   },
-  simplifySiteList: function simplifySiteList(USGS_Site) {
+  simplifySiteList: function (USGS_Site) {
     var simpleObj = {};
     simpleObj.siteName = USGS_Site.sourceInfo.siteName;
     simpleObj.siteCode = USGS_Site.sourceInfo.siteCode[0].value;
@@ -949,7 +943,7 @@ var USGS = {
     return simpleObj;
   },
 
-  getStreamName: function getStreamName(USGSSiteName) {
+  getStreamName: function (USGSSiteName) {
     var orSpecialCases = [{ "match": "lake creek", "output": "Lake Creek" }, { "match": "Lake Billy Chinook", "output": "Lake Billy Chinook" }, { "match": "Star Gulch near ruch", "output": "Star Gulch near Ruch, OR" }, { "match": "Oak Grove Fork", "output": "Clackamas River" }, { "match": "Klamath Straits Drain", "output": "Klamath Straits Drain" }, { "match": "Coast Fork Willamette", "output": "Coast Fork Willamette River" }];
     var specialOutput;
     _.forEach(orSpecialCases, function (specCase) {
@@ -969,7 +963,7 @@ var USGS = {
     }
   },
 
-  cleanDataLabel: function cleanDataLabel(simplifiedUSGSobj) {
+  cleanDataLabel: function (simplifiedUSGSobj) {
     var units;
     var label;
     switch (simplifiedUSGSobj.units.split(',')[0]) {
@@ -986,14 +980,14 @@ var USGS = {
     }
     return { label: label, value: [simplifiedUSGSobj.value, units].join("") };
   },
-  toTitleCase: function toTitleCase(string) {
+  toTitleCase: function (string) {
     var str = string.toLowerCase();
     return str.split(" ").map(function (i) {
       return i[0].toUpperCase() + i.substring(1);
     }).join(" ");
   },
 
-  cleanSiteNames: function cleanSiteNames(sites) {
+  cleanSiteNames: function (sites) {
     var sites = _.sortBy(_.unique(sites, 'siteCode'), 'siteName');
 
     _.forEach(sites, function (site) {
@@ -1047,7 +1041,7 @@ var USGS = {
     });
     return sites;
   },
-  getZone: function getZone(site) {
+  getZone: function (site) {
     var swBound = odfwHelper.getCoordinates("Southwest Zone Boundary Line (rough)").reverse(),
         seBound = odfwHelper.getCoordinates("Southeast Zone Boundary Line (rough)").reverse(),
         nwBound = odfwHelper.getCoordinates("Northwest Zone Boundary Line (Rough)").reverse(),
