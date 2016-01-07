@@ -6,8 +6,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "begin": "babel ./src -o ./lib",
-    "prestart" : "npm run begin",
-    "prebegin" : "watchify -o public/js/bundle.js -v -d lib/app.js"
+    "watch" : "watchify -o public/js/bundle.js -v -d lib/app.js"
   },
   "repository": {
     "type": "git",

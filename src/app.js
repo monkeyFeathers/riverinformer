@@ -14,5 +14,3 @@ React.render(
   <RI_App />,
   document.getElementById('main')
 );
-
-
