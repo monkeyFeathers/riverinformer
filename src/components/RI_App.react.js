@@ -11,7 +11,7 @@ var RI_App = React.createClass({
     return (
       <section>
         <MainNav selectRiver={this.setRiver}/>
-
+        <River riverName={this.state.river} />
       </section>
 
     );
