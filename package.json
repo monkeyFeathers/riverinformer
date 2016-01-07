@@ -4,7 +4,10 @@
   "description": "River Informer takes river data from the USGS and weather data and forcasts to help answer the age old question \"should I go fishing?\"",
   "main": "lib/js/riverinformer.js",
   "scripts": {
-    "start": "watchify -o public/js/bundle.js -v -d lib/app.js"
+    "start": "nodemon server.js",
+    "begin": "babel ./src -o ./lib",
+    "prestart" : "npm run begin",
+    "prebegin" : "watchify -o public/js/bundle.js -v -d lib/app.js"
   },
   "repository": {
     "type": "git",
@@ -21,15 +24,21 @@
     "babel": "^5.4.7",
     "babel-core": "^5.8.22",
     "babel-loader": "^5.3.2",
+    "babel-preset-es2015": "^6.1.2",
     "babelfy": "^1.1.0",
     "babelify": "^6.3.0",
+    "chai": "^3.4.0",
     "del": "^1.2.0",
     "envify": "^3.4.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.1.0",
     "gulp-flatten": "^0.1.1",
+    "gulp-jscs": "^3.0.2",
+    "gulp-jshint": "^1.12.0",
+    "gulp-mocha": "^2.1.3",
     "gulp-util": "^3.0.6",
     "jest-cli": "^0.4.18",
+    "jshint-stylish": "^2.0.1",
     "object-assign": "^3.0.0",
     "reactify": "^1.1.1",
     "run-sequence": "^1.1.0",
