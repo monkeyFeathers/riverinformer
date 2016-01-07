@@ -19,21 +19,29 @@ var MainNav = React.createClass({
             <a className="navbar-brand" href="#">River Informer</a>
           </div>
 
-
           <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul className="nav navbar-nav">
-              <li><a href="#clackamas" onClick={this.handleClick.bind(this, 'clackamas')}>Clackamas</a></li>
-              <li><a href="#sandy" onClick={this.handleClick.bind(this, 'sandy')}>Sandy</a></li>
+              <li><a href="#clackamas" className="river-selector" data-river-name="clackamas" onClick={this.handleClick.bind(this, 'clackamas')}>Clackamas</a></li>
+              <li><a href="#sandy" className="river-selector" data-river-name="sandy" onClick={this.handleClick.bind(this, 'sandy')}>Sandy</a></li>
             </ul>
           </div>
         </div>
       </nav>
     );
   },
+
   handleClick: function(river) {
     this.setState({clicked: !this.state.clicked})
     this.props.selectRiver(river)
-    console.log(river)
+    var rivSels = document.getElementsByClassName('river-selector')
+
+    for (var i = 0; i < rivSels.length; i++){
+      if (rivSels[i].getAttribute('data-river-name') === river) {
+        rivSels[i].parentElement.classList.add('active');
+      } else {
+        rivSels[i].parentElement.classList.remove('active');
+      }
+    }
   }
 });
 
