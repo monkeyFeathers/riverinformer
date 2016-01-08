@@ -1,23 +1,39 @@
 var React = require('react');
 
 var River = React.createClass({
+
   getInitialState: function() {
     return {
-      report:'',
+      report: null,
       siteData: null,
     }
   },
+
   componentDidMount: function() {
+    this.fetchRiverData(this.props.riverName)
+  },
+
+  componentWillReceiveProps: function(nextProps) {
+    this.fetchRiverData(nextProps.riverName)
+  },
+
+  fetchRiverData: function(river){
     var siteCodes = {
       clackamas: '14210000',
       sandy: '14142500',
     };
-    var USGS_BASE_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065';
-    var USGS_REQ_URL = USGS_BASE_URL + '&sites=' + siteCodes[this.props.riverName];
+    var USGS_BASE_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065,00010&period=P10D';
+    var USGS_REQ_URL = USGS_BASE_URL + '&sites=' + siteCodes[river];
 
-    $.when($.get(stateSitesRequestURL), $.get('/report')).done(function(sites, reports) {}.bind(this))
-
+    $.get(USGS_REQ_URL, function(data) {
+      if (this.isMounted()){
+        this.setState({
+          siteData: JSON.stringify(data),
+        })
+      }
+    }.bind(this))
   },
+
   render: function(){
     return (
       <article>
@@ -29,11 +45,17 @@ var River = React.createClass({
             <div className="col-md-6">
               <div>
                 <h4>fishing report</h4>
+                <div>
+                  {this.state.report}
+                </div>
               </div>
             </div>
             <div className="col-md-6">
               <div>
                 <h4>site data and weather</h4>
+                <div>
+                  {this.state.siteData}
+                </div>
               </div>
             </div>
           </div>

@@ -53,10 +53,11 @@
 	 */
 
 	var React = __webpack_require__(1);
+	var ReactDOM = __webpack_require__(161);
 
 	var RI_App = __webpack_require__(158);
 
-	React.render(React.createElement(RI_App, null), document.getElementById('main'));
+	ReactDOM.render(React.createElement(RI_App, null), document.getElementById('main'));
 
 /***/ },
 /* 1 */
@@ -19656,16 +19657,26 @@
 	  displayName: 'RI_App',
 
 	  getInitialState: function () {
-	    return { river: 'clackamas' };
+	    return {
+	      river: 'clackamas'
+	    };
 	  },
+
+	  // siteData: null,
+	  // report: null,
+	  componentDidMount: function () {
+	    //this.fetchRiverData(this.state.river)
+	  },
+
 	  render: function () {
 	    return React.createElement(
 	      'section',
 	      null,
 	      React.createElement(MainNav, { selectRiver: this.setRiver }),
-	      React.createElement(River, { riverName: this.state.river })
+	      React.createElement(River, { riverName: this.state.river, siteData: this.state.siteData })
 	    );
 	  },
+
 	  setRiver: function (river) {
 	    this.setState({ river: river });
 	    console.log(river + ' passed to app');
@@ -19772,20 +19783,36 @@
 
 	  getInitialState: function () {
 	    return {
-	      report: '',
+	      report: null,
 	      siteData: null
 	    };
 	  },
+
 	  componentDidMount: function () {
+	    this.fetchRiverData(this.props.riverName);
+	  },
+
+	  componentWillReceiveProps: function (nextProps) {
+	    this.fetchRiverData(nextProps.riverName);
+	  },
+
+	  fetchRiverData: function (river) {
 	    var siteCodes = {
 	      clackamas: '14210000',
 	      sandy: '14142500'
 	    };
-	    var USGS_BASE_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065';
-	    var USGS_REQ_URL = USGS_BASE_URL + '&sites=' + siteCodes[this.props.riverName];
+	    var USGS_BASE_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065,00010&period=P10D';
+	    var USGS_REQ_URL = USGS_BASE_URL + '&sites=' + siteCodes[river];
 
-	    $.when($.get(stateSitesRequestURL), $.get('/report')).done(function (sites, reports) {}.bind(this));
+	    $.get(USGS_REQ_URL, function (data) {
+	      if (this.isMounted()) {
+	        this.setState({
+	          siteData: JSON.stringify(data)
+	        });
+	      }
+	    }.bind(this));
 	  },
+
 	  render: function () {
 	    return React.createElement(
 	      'article',
@@ -19816,6 +19843,11 @@
 	                'h4',
 	                null,
 	                'fishing report'
+	              ),
+	              React.createElement(
+	                'div',
+	                null,
+	                this.state.report
 	              )
 	            )
 	          ),
@@ -19829,6 +19861,11 @@
 	                'h4',
 	                null,
 	                'site data and weather'
+	              ),
+	              React.createElement(
+	                'div',
+	                null,
+	                this.state.siteData
 	              )
 	            )
 	          )
@@ -19839,6 +19876,15 @@
 	});
 
 	module.exports = River;
+
+/***/ },
+/* 161 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = __webpack_require__(3);
+
 
 /***/ }
 /******/ ]);
