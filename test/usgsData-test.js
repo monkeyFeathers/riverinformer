@@ -73,7 +73,9 @@ describe('USGS Instantaneous Data -- single site', function() {
           .and.is.an('array');
         expect(firstParam.data[0]).to.have.property('value')
           .and.to.be.ok;
-        expect(firstParam.data[0]).to.have.property('dateTime')
+        expect(firstParam.data[0]).to.have.property('date')
+          .and.to.be.ok;
+        expect(firstParam.data[0]).to.have.property('time')
           .and.to.be.ok;
       });
     })

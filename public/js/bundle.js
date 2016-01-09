@@ -19915,7 +19915,8 @@
 	      param.description = tsItem.variable.variableDescription;
 	      param.units = tsItem.variable.unit.unitAbbreviation;
 	      param.data = tsItem.values[0].value.map(function (val, ind) {
-	        return { dateTime: val.dateTime, value: val.value };
+	        var dateTime = val.dateTime.split('T');
+	        return { date: dateTime[0], value: val.value, time: dateTime[1] };
 	      });
 	      parameters.push(param);
 	    });
@@ -32342,15 +32343,41 @@
 
 	var React = __webpack_require__(1);
 	var ChartistGraph = __webpack_require__(168);
+	var _ = __webpack_require__(163);
 
 	var Chart = React.createClass({
 	  displayName: 'Chart',
 
 	  render: function () {
 	    var data = this.props.dataSet;
+
+	    var dayGroups = _.groupBy(data.data, function (datum) {
+	      return datum.date;
+	    });
+
+	    var filteredDataSet = _.chain(dayGroups).map(function (dayGroup) {
+	      return _.filter(dayGroup, function (reading) {
+	        var midnight = '00:00:00.000-08:00';
+	        var noon = '12:00:00.000-08:00';
+	        var time = reading.time;
+	        if (reading.time === midnight || reading.time === noon) return reading;
+	      });
+	    }).filter(function (set) {
+	      return set.length > 0;
+	    }).flatten().value();
+
+	    var labeledDataSet = filteredDataSet.map(function (set) {
+	      set.label = set.time === '00:00:00.000-08:00' ? set.date + ' - midnight' : set.date + ' - noon';
+	      return set;
+	    });
+
 	    var simpleLineChartData = {
-	      labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-	      series: [[12, 9, 7, 8, 5], [2, 1, 3.5, 7, 3], [1, 3, 4, 5, 6]]
+	      labels: labeledDataSet.map(function (set) {
+	        return set.label;
+	      }),
+	      series: [labeledDataSet.map(function (set) {
+	        return set.value;
+	      })]
 	    };
 	    return React.createElement(
 	      'div',
@@ -32359,9 +32386,11 @@
 	        'h6',
 	        null,
 	        data.description,
+	        ' -- ',
+	        data.units,
 	        ':'
 	      ),
-	      React.createElement(ChartistGraph, { data: simpleLineChartData, type: 'Line' })
+	      React.createElement(ChartistGraph, { data: simpleLineChartData, type: 'Line', options: { showPoint: false } })
 	    );
 	  }
 	});

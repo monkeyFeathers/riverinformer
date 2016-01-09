@@ -20,7 +20,8 @@ var USGS = {
       param.description = tsItem.variable.variableDescription;
       param.units = tsItem.variable.unit.unitAbbreviation;
       param.data = tsItem.values[0].value.map(function(val, ind) {
-        return {dateTime: val.dateTime, value: val.value}
+        var dateTime = val.dateTime.split('T')
+        return {date: dateTime[0], value: val.value, time: dateTime[1]}
       })
       parameters.push(param)
     })
