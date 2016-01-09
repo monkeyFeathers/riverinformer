@@ -1,4 +1,6 @@
 var React = require('react');
+var USGS = require('../usgs/helper');
+var Site = require('./Site.react');
 
 var River = React.createClass({
 
@@ -28,13 +30,14 @@ var River = React.createClass({
     $.get(USGS_REQ_URL, function(data) {
       if (this.isMounted()){
         this.setState({
-          siteData: JSON.stringify(data),
+          siteData: USGS.simplify(data),
         })
       }
     }.bind(this))
   },
 
   render: function(){
+
     return (
       <article>
         <div>
@@ -54,7 +57,7 @@ var River = React.createClass({
               <div>
                 <h4>site data and weather</h4>
                 <div>
-                  {this.state.siteData}
+                  <Site chartData={this.state.siteData} />
                 </div>
               </div>
             </div>
