@@ -19806,7 +19806,7 @@
 
 	  componentWillReceiveProps: function (nextProps) {
 	    this.fetchRiverData(nextProps.riverName);
-	    this.fetchRiverReport(this.props.riverName);
+	    this.fetchRiverReport(nextProps.riverName);
 	  },
 
 	  fetchRiverData: function (river) {
