@@ -19667,14 +19667,20 @@
 
 	  getInitialState: function () {
 	    return {
-	      river: 'clackamas'
+	      route: window.location.hash.substr(1)
 	    };
 	  },
 
-	  // siteData: null,
-	  // report: null,
+	  componentWillMount: function () {
+	    if (!window.location.hash) window.location.hash = '#clackamas';
+	  },
+
 	  componentDidMount: function () {
-	    //this.fetchRiverData(this.state.river)
+	    window.addEventListener('hashchange', function () {
+	      this.setState({
+	        route: window.location.hash.substr(1)
+	      });
+	    }.bind(this));
 	  },
 
 	  render: function () {
@@ -19682,13 +19688,8 @@
 	      'section',
 	      null,
 	      React.createElement(MainNav, { selectRiver: this.setRiver }),
-	      React.createElement(River, { riverName: this.state.river, siteData: this.state.siteData })
+	      React.createElement(River, { riverName: this.state.route, siteData: this.state.siteData })
 	    );
-	  },
-
-	  setRiver: function (river) {
-	    this.setState({ river: river });
-	    console.log(river + ' passed to app');
 	  }
 
 	});
@@ -19700,31 +19701,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
+	var NavItem = __webpack_require__(169);
 
 	var MainNav = React.createClass({
 	  displayName: 'MainNav',
 
-	  getInitialState: function () {
-	    return { clicked: false };
-	  },
-
 	  render: function () {
-	    var rivers = ['clackamas', 'sandy'];
-
-	    var riverSelectors = rivers.map(function (river) {
-	      var defaultActive = '';
-	      if (river === 'clackamas') defaultActive = 'active';
-	      return React.createElement(
-	        'li',
-	        { className: defaultActive },
-	        React.createElement(
-	          'a',
-	          { href: '#' + river, className: 'river-selector', 'data-river-name': river, onClick: this.handleClick.bind(this, river) },
-	          river
-	        )
-	      );
-	    }, this);
-
 	    return React.createElement(
 	      'nav',
 	      { className: 'navbar navbar-default' },
@@ -19758,25 +19740,14 @@
 	          React.createElement(
 	            'ul',
 	            { className: 'nav navbar-nav' },
-	            riverSelectors
+	            React.createElement(NavItem, { river: 'clackamas' }),
+	            React.createElement(NavItem, { river: 'sandy' })
 	          )
 	        )
 	      )
 	    );
-	  },
-
-	  handleClick: function (river) {
-	    this.setState({ clicked: !this.state.clicked });
-	    this.props.selectRiver(river);
-	    var rivSels = document.getElementsByClassName('river-selector');
-	    for (var i = 0; i < rivSels.length; i++) {
-	      if (rivSels[i].getAttribute('data-river-name') === river) {
-	        rivSels[i].parentElement.classList.add('active');
-	      } else {
-	        rivSels[i].parentElement.classList.remove('active');
-	      }
-	    }
 	  }
+
 	});
 
 	module.exports = MainNav;
@@ -36664,6 +36635,50 @@
 
 	}));
 
+
+/***/ },
+/* 169 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+
+	var NavItem = React.createClass({
+	  displayName: 'NavItem',
+
+	  getInitialState: function () {
+	    return { active: this.setActive() };
+	  },
+
+	  componentDidMount: function () {
+	    window.addEventListener('hashchange', function () {
+	      this.setState({
+	        active: this.setActive()
+	      });
+	    }.bind(this));
+	  },
+
+	  render: function () {
+	    var river = this.props.river;
+	    return React.createElement(
+	      'li',
+	      { className: this.state.active ? 'active' : '' },
+	      React.createElement(
+	        'a',
+	        { href: '#' + river,
+	          className: 'river-selector',
+	          'data-river-name': river },
+	        river
+	      )
+	    );
+	  },
+
+	  setActive: function () {
+	    if (window.location.hash.substr(1) === this.props.river) return true;
+	    return false;
+	  }
+	});
+
+	module.exports = NavItem;
 
 /***/ }
 /******/ ]);

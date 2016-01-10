@@ -1,20 +1,9 @@
 var React = require('react');
+var NavItem = require('./NavItem.react');
 
 var MainNav = React.createClass({
 
-  getInitialState: function() {
-   return {clicked: false};
-  },
-
   render: function() {
-    var rivers = ['clackamas', 'sandy'];
-
-    var riverSelectors = rivers.map(function(river) {
-      var defaultActive = '';
-      if (river === 'clackamas') defaultActive = 'active'
-      return <li className={defaultActive}><a href={'#'+river} className="river-selector" data-river-name={river} onClick={this.handleClick.bind(this, river)}>{river}</a></li>
-    }, this);
-
     return (
       <nav className="navbar navbar-default">
         <div className="container-fluid">
@@ -29,7 +18,8 @@ var MainNav = React.createClass({
           </div>
           <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul className="nav navbar-nav">
-              {riverSelectors}
+              <NavItem river={'clackamas'}/>
+              <NavItem river={'sandy'}/>
             </ul>
           </div>
         </div>
@@ -37,18 +27,6 @@ var MainNav = React.createClass({
     );
   },
 
-  handleClick: function(river) {
-    this.setState({clicked: !this.state.clicked})
-    this.props.selectRiver(river)
-    var rivSels = document.getElementsByClassName('river-selector')
-    for (var i = 0; i < rivSels.length; i++){
-      if (rivSels[i].getAttribute('data-river-name') === river) {
-        rivSels[i].parentElement.classList.add('active');
-      } else {
-        rivSels[i].parentElement.classList.remove('active');
-      }
-    }
-  }
 });
 
 module.exports = MainNav;

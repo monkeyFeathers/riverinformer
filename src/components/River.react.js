@@ -72,7 +72,6 @@ var River = React.createClass({
               <div>
                 <h4>Fishing Report &mdash; {date}</h4>
                 <div>
-
                   <h6>Species: {species}</h6>
                   {reportParagraphs}
                 </div>
