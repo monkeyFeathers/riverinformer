@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "River Informer takes river data from the USGS and weather data and forcasts to help answer the age old question \"should I go fishing?\"",
   "main": "lib/js/riverinformer.js",
-  "engines": {
-    "node": "4.2.1",
-    "npm": "3.3.12",
-  },
   "scripts": {
     "start": "node server.js",
     "build": "webpack",
