@@ -1,2 +1,4 @@
 # River Informer
-this site takes current river data from USGS as well as weather data to help you answer the age old question, "should I go fishing?"
+This site aggregates current river data from USGS and fishing reports for the Sandy and Clackamas rivers in Oregon.
+
+Built with React and Express.
