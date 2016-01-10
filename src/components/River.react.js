@@ -26,10 +26,8 @@ var River = React.createClass({
       clackamas: '14210000',
       sandy: '14142500',
     };
-    var USGS_BASE_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065,00010&period=P10D';
-    var USGS_REQ_URL = USGS_BASE_URL + '&sites=' + siteCodes[river];
-
-    $.get(USGS_REQ_URL, function(data) {
+    
+    $.get('/site/'+siteCodes[river], function(data) {
       if (this.isMounted()){
         this.setState({
           siteData: USGS.simplify(data),
