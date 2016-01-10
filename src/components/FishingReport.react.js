@@ -13,7 +13,7 @@ var FishingReport = React.createClass({
           return <p>{rep}</p>
         })}
       </div>
-      )
+    )
   }
 
 });
