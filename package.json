@@ -49,5 +49,10 @@
     "url": "https://github.com/monkeyFeathers/riverinformer/issues"
   },
   "homepage": "https://github.com/monkeyFeathers/riverinformer#readme",
-  "dependencies": {}
+  "dependencies": {
+    "express": "^4.13.3",
+    "cheerio": "^0.19.0",
+    "lodash": "^3.10.1",
+    "superagent": "^1.6.1",
+  }
 }
