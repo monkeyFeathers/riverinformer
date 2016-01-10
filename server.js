@@ -1,9 +1,7 @@
 var express = require('express');
 var request = require('superagent');
 var _ = require('lodash');
-var ReportHelper = require("./src/utilities/ReportHelper");
-var OREGON_SITES = require('./cache/oregon_sites');
-var ZoneBoundaries = require("./src/odfw/ZoneBoundaries");
+var ReportHelper = require("./src/odfw/ReportHelper");
 
 var app = express();
 
