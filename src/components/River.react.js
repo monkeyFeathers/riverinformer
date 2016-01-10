@@ -63,16 +63,16 @@ var River = React.createClass({
     }
     return (
       <article>
+        <div className="container-fluid">
         <div>
           <h3>{this.props.riverName} river</h3>
         </div>
-        <div className="container-fluid">
           <div className="row">
             <div className="col-md-6">
               <div>
-                <h4>fishing report</h4>
+                <h4>Fishing Report &mdash; {date}</h4>
                 <div>
-                  <h5>{date}</h5>
+
                   <h6>Species: {species}</h6>
                   {reportParagraphs}
                 </div>

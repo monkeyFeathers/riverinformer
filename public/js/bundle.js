@@ -19858,17 +19858,17 @@
 	      null,
 	      React.createElement(
 	        'div',
-	        null,
-	        React.createElement(
-	          'h3',
-	          null,
-	          this.props.riverName,
-	          ' river'
-	        )
-	      ),
-	      React.createElement(
-	        'div',
 	        { className: 'container-fluid' },
+	        React.createElement(
+	          'div',
+	          null,
+	          React.createElement(
+	            'h3',
+	            null,
+	            this.props.riverName,
+	            ' river'
+	          )
+	        ),
 	        React.createElement(
 	          'div',
 	          { className: 'row' },
@@ -19881,16 +19881,12 @@
 	              React.createElement(
 	                'h4',
 	                null,
-	                'fishing report'
+	                'Fishing Report — ',
+	                date
 	              ),
 	              React.createElement(
 	                'div',
 	                null,
-	                React.createElement(
-	                  'h5',
-	                  null,
-	                  date
-	                ),
 	                React.createElement(
 	                  'h6',
 	                  null,
