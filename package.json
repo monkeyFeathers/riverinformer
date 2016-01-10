@@ -4,7 +4,7 @@
   "description": "River Informer takes river data from the USGS and weather data and forcasts to help answer the age old question \"should I go fishing?\"",
   "main": "lib/js/riverinformer.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "build": "webpack",
     "watch": "webpack -w"
   },
