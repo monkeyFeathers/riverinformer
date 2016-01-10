@@ -1,16 +1,41 @@
 var React = require('react');
-var RiverSite = require('./RiverSite.react');
-var USState = require('./USState.react');
-var Stream = require("./Stream.react")
-var FishingReport = require("./FishingReport.react")
+var MainNav = require('./MainNav.react');
+var River = require('./River.react');
+
+
 var RI_App = React.createClass({
+  getInitialState: function() {
+    return {
+      river: 'clackamas',
+      // siteData: null,
+      // report: null,
+    }
+  },
+
+  componentDidMount: function() {
+    //this.fetchRiverData(this.state.river)
+  },
 
   render: function() {
-    
-  return (
-      <USState usState={'or'}/>
+    return (
+      <section>
+        <MainNav selectRiver={this.setRiver}/>
+        <River riverName={this.state.river} siteData={this.state.siteData}/>
+      </section>
+
     );
   },
+
+  setRiver: function(river) {
+    this.setState({river: river})
+    console.log(river + ' passed to app')
+  },
+
+
+
+
+
+
 });
 
-module.exports = RI_App;  
+module.exports = RI_App;

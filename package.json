@@ -4,7 +4,9 @@
   "description": "River Informer takes river data from the USGS and weather data and forcasts to help answer the age old question \"should I go fishing?\"",
   "main": "lib/js/riverinformer.js",
   "scripts": {
-    "start": "watchify -o public/js/bundle.js -v -d lib/app.js"
+    "start": "nodemon server.js",
+    "build": "webpack",
+    "watch": "webpack -w"
   },
   "repository": {
     "type": "git",
@@ -18,48 +20,34 @@
   "author": "Javier Quiroz",
   "license": "MIT",
   "devDependencies": {
-    "babel": "^5.4.7",
-    "babel-core": "^5.8.22",
-    "babel-loader": "^5.3.2",
-    "babelfy": "^1.1.0",
-    "babelify": "^6.3.0",
-    "del": "^1.2.0",
-    "envify": "^3.4.0",
-    "gulp": "^3.9.0",
-    "gulp-babel": "^5.1.0",
-    "gulp-flatten": "^0.1.1",
-    "gulp-util": "^3.0.6",
-    "jest-cli": "^0.4.18",
-    "object-assign": "^3.0.0",
-    "reactify": "^1.1.1",
-    "run-sequence": "^1.1.0",
-    "vinyl-source-stream": "^1.0.0",
-    "watchify": "^3.4.0",
-    "webpack": "^1.11.0",
-    "webpack-stream": "^2.1.0"
+    "babel-core": "^6.4.0",
+    "babel-loader": "^6.2.1",
+    "babel-preset-react": "^6.3.13",
+    "bluebird": "^3.1.1",
+    "chai": "^3.4.1",
+    "chai-http": "^1.0.0",
+    "chartist": "^0.9.5",
+    "cheerio": "^0.19.0",
+    "css-loader": "^0.23.1",
+    "express": "^4.13.3",
+    "lodash": "^3.10.1",
+    "mocha": "^2.3.4",
+    "react": "^0.14.6",
+    "react-chartist": "^0.10.1",
+    "react-dom": "^0.14.6",
+    "request": "^2.67.0",
+    "style-loader": "^0.13.0",
+    "superagent": "^1.6.1",
+    "webpack": "^1.12.10"
   },
-  "browserify": {
-    "Transform": [
-      "babelfy"
+  "babel": {
+    "presets": [
+      "react"
     ]
   },
   "bugs": {
     "url": "https://github.com/monkeyFeathers/riverinformer/issues"
   },
   "homepage": "https://github.com/monkeyFeathers/riverinformer#readme",
-  "dependencies": {
-    "bluebird": "^2.10.1",
-    "cheerio": "^0.19.0",
-    "express": "^4.13.3",
-    "flux": "^2.1.1",
-    "forecastio": "^0.2.0",
-    "immutable": "^3.7.5",
-    "jQuery": "^1.7.4",
-    "jquery": "^2.1.4",
-    "lodash": "^3.10.1",
-    "react": "^0.13.3",
-    "react-bootstrap": "^0.25.1",
-    "request": "^2.62.0",
-    "urlencode": "^1.1.0"
-  }
+  "dependencies": {}
 }

@@ -1,6 +1,5 @@
 var cheerio = require('cheerio');
 var _ = require('lodash');
-var fs = require('fs');
 
 var ReportHelper = {
   extractReports: function(html){
@@ -9,7 +8,7 @@ var ReportHelper = {
     var list = $(".blue_blockwhite").nextAll();
     var p = list.filter('p');
     var count;
-    
+
     p.each(function(i){
       if ($(this).hasClass('blue_blockwhite')) {
         if (!count){count = i;}
@@ -35,7 +34,7 @@ var ReportHelper = {
     }));
 
     var reports = _.compact(reportIndices.map(function(el, i, array){
-      if (i !== 0){   
+      if (i !== 0){
         return cleanText.slice(array[i-1],el)
       }
     }));

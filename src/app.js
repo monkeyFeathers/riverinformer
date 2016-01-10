@@ -7,12 +7,11 @@
  */
 
 var React = require('react');
+var ReactDOM = require('react-dom');
 
 var RI_App = require('./components/RI_App.react');
 
-React.render(
+ReactDOM.render(
   <RI_App />,
   document.getElementById('main')
 );
-
-
