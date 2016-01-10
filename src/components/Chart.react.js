@@ -9,7 +9,7 @@ var Chart = React.createClass({
 
     var dayGroups = _.groupBy(data.data, function(datum) {
       return datum.date
-    })
+    });
 
     var filteredDataSet = _.chain(dayGroups).map(function(dayGroup) {
       return _.filter(dayGroup, function(reading) {

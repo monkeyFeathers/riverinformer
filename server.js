@@ -1,6 +1,5 @@
 var express = require('express');
-var Promise = require('bluebird');
-var request = Promise.promisify(require("request"));
+var request = require('superagent');
 var _ = require('lodash');
 var ReportHelper = require("./src/utilities/ReportHelper");
 var OREGON_SITES = require('./cache/oregon_sites');
@@ -34,61 +33,22 @@ app.get('/weather', function(req,res){
   }).pipe(res);
   // res.send('hello')
 })
-app.get('/report', function(req, res){
-  var nwZone = request("http://www.dfw.state.or.us/rr/northwest/").get(1)
-  var swZone = request("http://www.dfw.state.or.us/rr/southwest/").get(1)
-  var wZone = request("http://www.dfw.state.or.us/rr/willamette/").get(1)
-  var ctZone = request("http://www.dfw.state.or.us/rr/central/").get(1)
-  var seZone = request("http://www.dfw.state.or.us/rr/southeast/").get(1)
-  var neZone = request("http://www.dfw.state.or.us/rr/northeast/").get(1)
-  var snkZone = request("http://www.dfw.state.or.us/rr/snake").get(1)
-  var colZone = request("http://www.dfw.state.or.us/rr/columbia/").get(1)
-  var marineZone = request("http://www.dfw.state.or.us/rr/marine/").get(1)
-
-  Promise.join(nwZone, swZone,wZone,ctZone,seZone,neZone,snkZone,colZone,marineZone, 
-    function(nw,sw,w,ct,se,ne,snk,col,marine){
-      var extract = ReportHelper.extractReports;
-      var reportCollection = { 
-        "Northwest_zone" : extract(nw),
-        "Soutwest_zone" : extract(sw),
-        "Willamette_zone" : extract(w),
-        "Central_zone" : extract(ct),
-        "Southeast_zone" : extract(se),
-        "Northeast_zone" : extract(ne),
-        "Snake_zone" : extract(snk),
-        "Columbia_zone" : extract(col),
-        "Marine_zone" : extract(marine)
-      }
-      return reportCollection;
-  }).then(function(reportCollection){
-    res.json(reportCollection)
-  }).catch(function(err){
-    console.log(err);
-  });
+app.get('/report/:river', function(req, res){
+  request
+    .get('http://www.dfw.state.or.us/rr/willamette/')
+    .end(function(err, odfwRes) {
+      var reports = ReportHelper.extractReports(odfwRes.text)
+      var re = new RegExp(req.params.river,'i');
+      var riverReport = reports.filter(function(report) {
+        if (report.location.match(re)) return report
+      })
+      res.json(riverReport)
+    });
 });
+
 app.get('/zones', function(req,res){
   res.json(ZoneBoundaries);
 })
-
-// app.get('/save_sites', function(req, res){
-//   var url = 'http://waterservices.usgs.gov/nwis/iv/?format=json';
-//     url += '&siteType=ST&stateCd=or';
-//   request(url, function(error, response, body){
-//     var USGSResponseObj = JSON.parse(body);
-//     var USGSTimeSeriesItems = USGSResponseObj.value.timeSeries;
-//     var sites = [];
-//     USGSTimeSeriesItems.forEach(function(site){
-//       sites.push(USGS.simplifySiteList(site));
-//     });
-      
-//     sites = USGS.cleanSiteNames(sites)
-//     fs.writeFile('oregonSites.js', JSON.stringify(sites), function (err) {
-//       if (err) throw err;
-//       console.log('It\'s saved!');
-//     });
-//     res.json(sites);
-//   });
-// })
 
 // Custom 404 page
 app.use(function(req, res) {
@@ -108,20 +68,3 @@ app.use(function(err, req, res, next) {
 app.listen(app.get('port'), function(){
   console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.');
 });
-
-/****************************************/
-/********** Get Clackamas Rivers ********/
-/*
-var clackSites = [], siteNames = [];
-oregonSites.forEach(function(site){
-  if (site.sourceInfo.siteName.match(/clackamas/i)) {
-    console.log(site.sourceInfo.siteName);
-    if (siteNames.indexOf(site.name) !== -1) {
-      console.log(site.name);
-      console.log('hello')
-      siteNames.push(site.name);
-      clackSites.push(site);
-    }
-  }
-});
-****************************************/

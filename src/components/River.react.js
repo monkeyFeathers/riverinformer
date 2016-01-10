@@ -13,10 +13,12 @@ var River = React.createClass({
 
   componentDidMount: function() {
     this.fetchRiverData(this.props.riverName)
+    this.fetchRiverReport(this.props.riverName)
   },
 
   componentWillReceiveProps: function(nextProps) {
     this.fetchRiverData(nextProps.riverName)
+    this.fetchRiverReport(this.props.riverName)
   },
 
   fetchRiverData: function(river){
@@ -36,8 +38,29 @@ var River = React.createClass({
     }.bind(this))
   },
 
-  render: function(){
+  fetchRiverReport: function(river) {
+    $.get('/report/'+river, function(data) {
+      if (this.isMounted()){
+        this.setState({
+          report: data[0]
+        })
+      }
+    }.bind(this))
+  },
 
+  render: function(){
+    var report = null;
+    var date = null;
+    var species = null;
+    var reportParagraphs = null;
+    if (this.state.report) {
+      report = this.state.report;
+      date = report.date;
+      species = report.species
+      reportParagraphs  = report.report.map(function(grph, ind) {
+        return <p key={ind+new Date().getTime()}>{grph}</p>
+      })
+    }
     return (
       <article>
         <div>
@@ -49,7 +72,9 @@ var River = React.createClass({
               <div>
                 <h4>fishing report</h4>
                 <div>
-                  {this.state.report}
+                  <h5>{date}</h5>
+                  <h6>Species: {species}</h6>
+                  {reportParagraphs}
                 </div>
               </div>
             </div>
