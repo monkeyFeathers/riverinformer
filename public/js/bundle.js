@@ -19660,7 +19660,7 @@
 
 	var React = __webpack_require__(1);
 	var MainNav = __webpack_require__(160);
-	var River = __webpack_require__(161);
+	var River = __webpack_require__(162);
 
 	var RI_App = React.createClass({
 	  displayName: 'RI_App',
@@ -19701,7 +19701,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var NavItem = __webpack_require__(169);
+	var NavItem = __webpack_require__(161);
 
 	var MainNav = React.createClass({
 	  displayName: 'MainNav',
@@ -19757,8 +19757,52 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var USGS = __webpack_require__(162);
-	var Site = __webpack_require__(165);
+
+	var NavItem = React.createClass({
+	  displayName: 'NavItem',
+
+	  getInitialState: function () {
+	    return { active: this.setActive() };
+	  },
+
+	  componentDidMount: function () {
+	    window.addEventListener('hashchange', function () {
+	      this.setState({
+	        active: this.setActive()
+	      });
+	    }.bind(this));
+	  },
+
+	  render: function () {
+	    var river = this.props.river;
+	    return React.createElement(
+	      'li',
+	      { className: this.state.active ? 'active' : '' },
+	      React.createElement(
+	        'a',
+	        { href: '#' + river,
+	          className: 'river-selector',
+	          'data-river-name': river },
+	        river
+	      )
+	    );
+	  },
+
+	  setActive: function () {
+	    if (window.location.hash.substr(1) === this.props.river) return true;
+	    return false;
+	  }
+	});
+
+	module.exports = NavItem;
+
+/***/ },
+/* 162 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var USGS = __webpack_require__(163);
+	var Site = __webpack_require__(166);
 
 	var River = React.createClass({
 	  displayName: 'River',
@@ -19785,10 +19829,8 @@
 	      clackamas: '14210000',
 	      sandy: '14142500'
 	    };
-	    var USGS_BASE_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065,00010&period=P10D';
-	    var USGS_REQ_URL = USGS_BASE_URL + '&sites=' + siteCodes[river];
 
-	    $.get(USGS_REQ_URL, function (data) {
+	    $.get('/site/' + siteCodes[river], function (data) {
 	      if (this.isMounted()) {
 	        this.setState({
 	          siteData: USGS.simplify(data)
@@ -19895,10 +19937,10 @@
 	module.exports = River;
 
 /***/ },
-/* 162 */
+/* 163 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(163);
+	var _ = __webpack_require__(164);
 
 	var USGS = {
 
@@ -19933,7 +19975,7 @@
 	module.exports = USGS;
 
 /***/ },
-/* 163 */
+/* 164 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/**
@@ -32288,10 +32330,10 @@
 	  }
 	}.call(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(164)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(165)(module), (function() { return this; }())))
 
 /***/ },
-/* 164 */
+/* 165 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -32307,11 +32349,11 @@
 
 
 /***/ },
-/* 165 */
+/* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var Chart = __webpack_require__(166);
+	var Chart = __webpack_require__(167);
 
 	var Site = React.createClass({
 	  displayName: 'Site',
@@ -32343,12 +32385,12 @@
 	module.exports = Site;
 
 /***/ },
-/* 166 */
+/* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ChartistGraph = __webpack_require__(167);
-	var _ = __webpack_require__(163);
+	var ChartistGraph = __webpack_require__(168);
+	var _ = __webpack_require__(164);
 
 	var Chart = React.createClass({
 	  displayName: 'Chart',
@@ -32403,7 +32445,7 @@
 	module.exports = Chart;
 
 /***/ },
-/* 167 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32461,7 +32503,7 @@
 	  }, {
 	    key: 'updateChart',
 	    value: function updateChart(config) {
-	      var Chartist = __webpack_require__(168);
+	      var Chartist = __webpack_require__(169);
 
 	      var type = config.type;
 	      var data = config.data;
@@ -32511,7 +32553,7 @@
 
 
 /***/ },
-/* 168 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (root, factory) {
@@ -36635,50 +36677,6 @@
 
 	}));
 
-
-/***/ },
-/* 169 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React = __webpack_require__(1);
-
-	var NavItem = React.createClass({
-	  displayName: 'NavItem',
-
-	  getInitialState: function () {
-	    return { active: this.setActive() };
-	  },
-
-	  componentDidMount: function () {
-	    window.addEventListener('hashchange', function () {
-	      this.setState({
-	        active: this.setActive()
-	      });
-	    }.bind(this));
-	  },
-
-	  render: function () {
-	    var river = this.props.river;
-	    return React.createElement(
-	      'li',
-	      { className: this.state.active ? 'active' : '' },
-	      React.createElement(
-	        'a',
-	        { href: '#' + river,
-	          className: 'river-selector',
-	          'data-river-name': river },
-	        river
-	      )
-	    );
-	  },
-
-	  setActive: function () {
-	    if (window.location.hash.substr(1) === this.props.river) return true;
-	    return false;
-	  }
-	});
-
-	module.exports = NavItem;
 
 /***/ }
 /******/ ]);

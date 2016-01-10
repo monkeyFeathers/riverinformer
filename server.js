@@ -31,6 +31,7 @@ app.get('/weather', function(req,res){
   }).pipe(res);
   // res.send('hello')
 })
+
 app.get('/report/:river', function(req, res){
   request
     .get('http://www.dfw.state.or.us/rr/willamette/')
@@ -42,6 +43,18 @@ app.get('/report/:river', function(req, res){
       })
       res.json(riverReport)
     });
+});
+
+app.get('/site/:siteCode', function(req, res) {
+  var USGS_BASE_URL = 'http://waterservices.usgs.gov/nwis/iv/?format=json&parameterCd=00060,00065,00010&period=P10D';
+  var USGS_REQ_URL = USGS_BASE_URL + '&sites=' + req.params.siteCode;
+  console.log('site request made')
+  console.log('usgs req url', USGS_REQ_URL)
+  request.get(USGS_REQ_URL)
+    .end(function(err, usgsRes) {
+      var siteData = JSON.parse(usgsRes.text)
+      res.json(siteData)
+    })
 });
 
 app.get('/zones', function(req,res){
