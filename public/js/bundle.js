@@ -19856,7 +19856,7 @@
 	    var reportParagraphs = null;
 	    if (this.state.report) {
 	      report = this.state.report;
-	      date = report.date;
+	      date = '&mdash; ' + report.date;
 	      species = report.species;
 	      reportParagraphs = report.report.map(function (grph, ind) {
 	        return React.createElement(
@@ -19894,7 +19894,7 @@
 	              React.createElement(
 	                'h4',
 	                null,
-	                'Fishing Report — ',
+	                'Fishing Report ',
 	                date
 	              ),
 	              React.createElement(
@@ -19919,7 +19919,7 @@
 	              React.createElement(
 	                'h4',
 	                null,
-	                'site data and weather'
+	                'River Data'
 	              ),
 	              React.createElement(
 	                'div',

@@ -26,7 +26,7 @@ var River = React.createClass({
       clackamas: '14210000',
       sandy: '14142500',
     };
-    
+
     $.get('/site/'+siteCodes[river], function(data) {
       if (this.isMounted()){
         this.setState({
@@ -53,7 +53,7 @@ var River = React.createClass({
     var reportParagraphs = null;
     if (this.state.report) {
       report = this.state.report;
-      date = report.date;
+      date = '&mdash; ' + report.date;
       species = report.species
       reportParagraphs  = report.report.map(function(grph, ind) {
         return <p key={ind+new Date().getTime()}>{grph}</p>
@@ -68,7 +68,7 @@ var River = React.createClass({
           <div className="row">
             <div className="col-md-6">
               <div>
-                <h4>Fishing Report &mdash; {date}</h4>
+                <h4>Fishing Report {date}</h4>
                 <div>
                   <h6>Species: {species}</h6>
                   {reportParagraphs}
@@ -77,7 +77,7 @@ var River = React.createClass({
             </div>
             <div className="col-md-6">
               <div>
-                <h4>site data and weather</h4>
+                <h4>River Data</h4>
                 <div>
                   <Site chartData={this.state.siteData} />
                 </div>
