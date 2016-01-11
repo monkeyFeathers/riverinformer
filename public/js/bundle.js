@@ -19856,7 +19856,7 @@
 	    var reportParagraphs = null;
 	    if (this.state.report) {
 	      report = this.state.report;
-	      date = '&mdash; ' + report.date;
+	      date = '\u2014 ' + report.date;
 	      species = report.species;
 	      reportParagraphs = report.report.map(function (grph, ind) {
 	        return React.createElement(
