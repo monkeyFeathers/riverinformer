@@ -26,7 +26,6 @@ app.get('/weather', function(req,res){
     if (error) {
       console.error(error);
     } else {
-      //console.log(body)
     }
   }).pipe(res);
   // res.send('hello')
