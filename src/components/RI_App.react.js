@@ -11,7 +11,7 @@ var RI_App = React.createClass({
   },
 
   componentWillMount: function() {
-    if (!window.location.hash) window.location.hash = '#clackamas'
+
   },
 
   componentDidMount: function() {
@@ -20,6 +20,7 @@ var RI_App = React.createClass({
         route: window.location.hash.substr(1)
       })
     }.bind(this))
+    if (!window.location.hash) window.location.hash = '#clackamas'
   },
 
   render: function() {

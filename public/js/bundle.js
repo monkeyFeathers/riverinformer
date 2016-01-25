@@ -19671,9 +19671,7 @@
 	    };
 	  },
 
-	  componentWillMount: function () {
-	    if (!window.location.hash) window.location.hash = '#clackamas';
-	  },
+	  componentWillMount: function () {},
 
 	  componentDidMount: function () {
 	    window.addEventListener('hashchange', function () {
@@ -19681,6 +19679,7 @@
 	        route: window.location.hash.substr(1)
 	      });
 	    }.bind(this));
+	    if (!window.location.hash) window.location.hash = '#clackamas';
 	  },
 
 	  render: function () {
