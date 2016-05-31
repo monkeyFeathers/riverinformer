@@ -19959,7 +19959,7 @@
 	    tsArray.map(function (tsItem) {
 	      var param = {};
 	      param.description = tsItem.variable.variableDescription;
-	      param.units = tsItem.variable.unit.unitAbbreviation;
+	      param.units = tsItem.variable.unit.unitCode;
 	      param.data = tsItem.values[0].value.map(function (val, ind) {
 	        var dateTime = val.dateTime.split('T');
 	        return { date: dateTime[0], value: val.value, time: dateTime[1] };
@@ -32364,7 +32364,6 @@
 	    if (this.props.chartData) {
 	      siteName = this.props.chartData.siteName;
 	      charts = this.props.chartData.parameters.map(function (param, ind) {
-	        //  console.log(param)
 	        return React.createElement(Chart, { dataSet: param, key: ind + new Date().getTime() });
 	      });
 	    }
@@ -32403,25 +32402,24 @@
 
 	    var filteredDataSet = _.chain(dayGroups).map(function (dayGroup) {
 	      return _.filter(dayGroup, function (reading) {
-	        var midnight = '00:00:00.000-08:00';
-	        var noon = '12:00:00.000-08:00';
+	        var midnight = '00:00:00.000';
+	        var noon = '12:00:00.000';
 	        var time = reading.time;
-	        if (reading.time === midnight || reading.time === noon) return reading;
+	        if (reading.time.match(midnight) || reading.time.match(noon)) return reading;
 	      });
 	    }).filter(function (set) {
 	      return set.length > 0;
+	    }).map(function (set) {
+	      return set.reduce(function (a, b) {
+	        return { date: a.date, value: (Number(a.value) + Number(b.value)) / 2 };
+	      });
 	    }).flatten().value();
 
-	    var labeledDataSet = filteredDataSet.map(function (set) {
-	      set.label = set.time === '00:00:00.000-08:00' ? set.date + ' - midnight' : set.date + ' - noon';
-	      return set;
-	    });
-
 	    var simpleLineChartData = {
-	      labels: labeledDataSet.map(function (set) {
-	        return set.label;
+	      labels: filteredDataSet.map(function (set) {
+	        return set.date;
 	      }),
-	      series: [labeledDataSet.map(function (set) {
+	      series: [filteredDataSet.map(function (set) {
 	        return set.value;
 	      })]
 	    };
