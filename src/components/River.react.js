@@ -5,12 +5,15 @@ import Site from './Site.react';
 export default class River extends React.Component {
   constructor(props) {
     super(props);
+    console.log(props.riverName)
     this.state = {report: null, siteData: null}
   }
 
   componentDidMount() {
-    this.fetchRiverData(this.props.riverName)
-    this.fetchRiverReport(this.props.riverName)
+    if (this.props.riverName) {
+      this.fetchRiverData(this.props.riverName)
+      this.fetchRiverReport(this.props.riverName)
+    }
   }
 
   componentWillReceiveProps(nextProps) {

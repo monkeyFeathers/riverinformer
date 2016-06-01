@@ -12,11 +12,11 @@ class RI_App extends React.Component {
   }
 
   componentDidMount() {
-    window.addEventListener('hashchange', function() {
+    window.addEventListener('hashchange', () => {
       this.setState({
         route: window.location.hash.substr(1)
       })
-    }.bind(this))
+    });
     if (!window.location.hash) window.location.hash = '#clackamas'
   }
 

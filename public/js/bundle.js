@@ -19702,11 +19702,13 @@
 	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
+	      var _this2 = this;
+
 	      window.addEventListener('hashchange', function () {
-	        this.setState({
+	        _this2.setState({
 	          route: window.location.hash.substr(1)
 	        });
-	      }.bind(this));
+	      });
 	      if (!window.location.hash) window.location.hash = '#clackamas';
 	    }
 	  }, {
@@ -19927,6 +19929,7 @@
 
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(River).call(this, props));
 
+	    console.log(props.riverName);
 	    _this.state = { report: null, siteData: null };
 	    return _this;
 	  }
@@ -19934,8 +19937,10 @@
 	  _createClass(River, [{
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      this.fetchRiverData(this.props.riverName);
-	      this.fetchRiverReport(this.props.riverName);
+	      if (this.props.riverName) {
+	        this.fetchRiverData(this.props.riverName);
+	        this.fetchRiverReport(this.props.riverName);
+	      }
 	    }
 	  }, {
 	    key: 'componentWillReceiveProps',
