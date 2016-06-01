@@ -19953,6 +19953,7 @@
 	    value: function fetchRiverData(river) {
 	      var _this2 = this;
 
+	      this.setState({ siteData: null });
 	      var siteCodes = {
 	        clackamas: '14210000',
 	        sandy: '14142500'
@@ -19969,6 +19970,7 @@
 	    value: function fetchRiverReport(river) {
 	      var _this3 = this;
 
+	      this.setState({ report: null });
 	      $.get('/report/' + river, function (data) {
 	        _this3.setState({
 	          report: data[0]
@@ -19993,6 +19995,8 @@
 	            grph
 	          );
 	        });
+	      } else {
+	        reportParagraphs = _react2.default.createElement('img', { src: '/img/gps.gif' });
 	      }
 	      return _react2.default.createElement(
 	        'article',
@@ -32529,6 +32533,8 @@
 	        charts = this.props.chartData.parameters.map(function (param, ind) {
 	          return _react2.default.createElement(_Chart2.default, { dataSet: param, key: ind + new Date().getTime() });
 	        });
+	      } else {
+	        charts = _react2.default.createElement('img', { src: 'img/gps.gif' });
 	      }
 	      return _react2.default.createElement(
 	        'div',

@@ -22,6 +22,7 @@ export default class River extends React.Component {
   }
 
   fetchRiverData(river){
+    this.setState({siteData: null})
     var siteCodes = {
       clackamas: '14210000',
       sandy: '14142500',
@@ -35,6 +36,7 @@ export default class River extends React.Component {
   }
 
   fetchRiverReport(river) {
+    this.setState({report: null})
     $.get('/report/'+river, (data) => {
         this.setState({
           report: data[0]
@@ -54,6 +56,8 @@ export default class River extends React.Component {
       reportParagraphs  = report.report.map(function(grph, ind) {
         return <p key={ind+new Date().getTime()}>{grph}</p>
       })
+    } else {
+      reportParagraphs = <img src="/img/gps.gif"/>
     }
     return (
       <article>

@@ -11,6 +11,8 @@ export default class Site extends React.Component {
       charts = this.props.chartData.parameters.map(function(param, ind) {
         return <Chart dataSet={param} key={ind + new Date().getTime()}/>
       })
+    } else {
+      charts = <img src="img/gps.gif"/>
     }
     return(
       <div>
