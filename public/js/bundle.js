@@ -19929,7 +19929,6 @@
 
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(River).call(this, props));
 
-	    console.log(props.riverName);
 	    _this.state = { report: null, siteData: null };
 	    return _this;
 	  }

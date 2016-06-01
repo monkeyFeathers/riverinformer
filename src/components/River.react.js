@@ -5,7 +5,6 @@ import Site from './Site.react';
 export default class River extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props.riverName)
     this.state = {report: null, siteData: null}
   }
 
