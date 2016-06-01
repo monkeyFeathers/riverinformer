@@ -1,8 +1,8 @@
-var React = require('react');
-var Chart = require('./Chart.react')
+import React from 'react';
+import Chart from './Chart.react';
 
-var Site = React.createClass({
-  render: function() {
+export default class Site extends React.Component {
+  render() {
     var charts = null;
     var siteName = null;
 
@@ -19,6 +19,4 @@ var Site = React.createClass({
       </div>
     )
   }
-});
-
-module.exports = Site;
+}

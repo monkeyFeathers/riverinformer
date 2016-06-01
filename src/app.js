@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Javier Quiroz.
+ * Copyright (c) 2016, Javier Quiroz.
  * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the

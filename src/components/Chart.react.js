@@ -1,10 +1,9 @@
-var React = require('react');
-var ChartistGraph = require('react-chartist');
-var _ = require('lodash');
+import React from 'react';
+import ChartistGraph from 'react-chartist';
+import _ from 'lodash';
 
-var Chart = React.createClass({
-
-  render: function(){
+export default class Chart extends React.Component {
+  render(){
     var data = this.props.dataSet;
 
     var dayGroups = _.groupBy(data.data, function(datum) {
@@ -37,6 +36,4 @@ var Chart = React.createClass({
       </div>
     )
   }
-});
-
-module.exports = Chart;
+}

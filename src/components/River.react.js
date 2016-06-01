@@ -1,52 +1,45 @@
-var React = require('react');
-var USGS = require('../usgs/helper');
-var Site = require('./Site.react');
+import React from 'react';
+import USGS from '../usgs/helper';
+import Site from './Site.react';
 
-var River = React.createClass({
+export default class River extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {report: null, siteData: null}
+  }
 
-  getInitialState: function() {
-    return {
-      report: null,
-      siteData: null,
-    }
-  },
-
-  componentDidMount: function() {
+  componentDidMount() {
     this.fetchRiverData(this.props.riverName)
     this.fetchRiverReport(this.props.riverName)
-  },
+  }
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps(nextProps) {
     this.fetchRiverData(nextProps.riverName)
     this.fetchRiverReport(nextProps.riverName)
-  },
+  }
 
-  fetchRiverData: function(river){
+  fetchRiverData(river){
     var siteCodes = {
       clackamas: '14210000',
       sandy: '14142500',
-    };
+    }
 
-    $.get('/site/'+siteCodes[river], function(data) {
-      if (this.isMounted()){
+    $.get('/site/'+siteCodes[river], (data) => {
         this.setState({
           siteData: USGS.simplify(data),
-        })
-      }
-    }.bind(this))
-  },
+        });
+    });
+  }
 
-  fetchRiverReport: function(river) {
-    $.get('/report/'+river, function(data) {
-      if (this.isMounted()){
+  fetchRiverReport(river) {
+    $.get('/report/'+river, (data) => {
         this.setState({
           report: data[0]
-        })
-      }
-    }.bind(this))
-  },
+        });
+    });
+  }
 
-  render: function(){
+  render() {
     var report = null;
     var date = null;
     var species = null;
@@ -88,6 +81,4 @@ var River = React.createClass({
       </article>
     )
   }
-});
-
-module.exports = River;
+}

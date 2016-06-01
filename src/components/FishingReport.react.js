@@ -1,9 +1,7 @@
-var React = require('react');
+import React from 'react';
 
-var FishingReport = React.createClass({
-
-
-  render: function() {
+export default class FishingReport extends React.Component {
+  render() {
     var report = this.props.report;
     return(
       <div>
@@ -15,7 +13,4 @@ var FishingReport = React.createClass({
       </div>
     )
   }
-
-});
-
-module.exports = FishingReport;
+}

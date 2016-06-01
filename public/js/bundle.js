@@ -44,8 +44,10 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
 	/**
-	 * Copyright (c) 2015, Javier Quiroz.
+	 * Copyright (c) 2016, Javier Quiroz.
 	 * All rights reserved.
 	 *
 	 * This source code is licensed under the MIT license found in the
@@ -19658,40 +19660,69 @@
 /* 159 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(1);
-	var MainNav = __webpack_require__(160);
-	var River = __webpack_require__(162);
+	'use strict';
 
-	var RI_App = React.createClass({
-	  displayName: 'RI_App',
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	  getInitialState: function () {
-	    return {
-	      route: window.location.hash.substr(1)
-	    };
-	  },
+	var _react = __webpack_require__(1);
 
-	  componentWillMount: function () {},
+	var _react2 = _interopRequireDefault(_react);
 
-	  componentDidMount: function () {
-	    window.addEventListener('hashchange', function () {
-	      this.setState({
-	        route: window.location.hash.substr(1)
-	      });
-	    }.bind(this));
-	    if (!window.location.hash) window.location.hash = '#clackamas';
-	  },
+	var _MainNav = __webpack_require__(160);
 
-	  render: function () {
-	    return React.createElement(
-	      'section',
-	      null,
-	      React.createElement(MainNav, { selectRiver: this.setRiver }),
-	      React.createElement(River, { riverName: this.state.route, siteData: this.state.siteData })
-	    );
+	var _MainNav2 = _interopRequireDefault(_MainNav);
+
+	var _River = __webpack_require__(162);
+
+	var _River2 = _interopRequireDefault(_River);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var RI_App = function (_React$Component) {
+	  _inherits(RI_App, _React$Component);
+
+	  function RI_App(props) {
+	    _classCallCheck(this, RI_App);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(RI_App).call(this, props));
+
+	    _this.state = { route: window.location.hash.substr(1) };
+	    return _this;
 	  }
 
-	});
+	  _createClass(RI_App, [{
+	    key: 'componentWillMount',
+	    value: function componentWillMount() {}
+	  }, {
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      window.addEventListener('hashchange', function () {
+	        this.setState({
+	          route: window.location.hash.substr(1)
+	        });
+	      }.bind(this));
+	      if (!window.location.hash) window.location.hash = '#clackamas';
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'section',
+	        null,
+	        _react2.default.createElement(_MainNav2.default, { selectRiver: this.setRiver }),
+	        _react2.default.createElement(_River2.default, { riverName: this.state.route, siteData: this.state.siteData })
+	      );
+	    }
+	  }]);
+
+	  return RI_App;
+	}(_react2.default.Component);
 
 	module.exports = RI_App;
 
@@ -19699,251 +19730,349 @@
 /* 160 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(1);
-	var NavItem = __webpack_require__(161);
+	'use strict';
 
-	var MainNav = React.createClass({
-	  displayName: 'MainNav',
-
-	  render: function () {
-	    return React.createElement(
-	      'nav',
-	      { className: 'navbar navbar-default' },
-	      React.createElement(
-	        'div',
-	        { className: 'container-fluid' },
-	        React.createElement(
-	          'div',
-	          { className: 'navbar-header' },
-	          React.createElement(
-	            'button',
-	            { type: 'button', className: 'navbar-toggle collapsed', 'data-toggle': 'collapse', 'data-target': '#bs-example-navbar-collapse-1', 'aria-expanded': 'false' },
-	            React.createElement(
-	              'span',
-	              { className: 'sr-only' },
-	              'Toggle navigation'
-	            ),
-	            React.createElement('span', { className: 'icon-bar' }),
-	            React.createElement('span', { className: 'icon-bar' }),
-	            React.createElement('span', { className: 'icon-bar' })
-	          ),
-	          React.createElement(
-	            'a',
-	            { className: 'navbar-brand', href: '#' },
-	            'River Informer'
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'collapse navbar-collapse', id: 'bs-example-navbar-collapse-1' },
-	          React.createElement(
-	            'ul',
-	            { className: 'nav navbar-nav' },
-	            React.createElement(NavItem, { river: 'clackamas' }),
-	            React.createElement(NavItem, { river: 'sandy' })
-	          )
-	        )
-	      )
-	    );
-	  }
-
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
 	});
 
-	module.exports = MainNav;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _NavItem = __webpack_require__(161);
+
+	var _NavItem2 = _interopRequireDefault(_NavItem);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var MainNav = function (_React$Component) {
+	  _inherits(MainNav, _React$Component);
+
+	  function MainNav() {
+	    _classCallCheck(this, MainNav);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(MainNav).apply(this, arguments));
+	  }
+
+	  _createClass(MainNav, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'nav',
+	        { className: 'navbar navbar-default' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'container-fluid' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'navbar-header' },
+	            _react2.default.createElement(
+	              'button',
+	              { type: 'button', className: 'navbar-toggle collapsed', 'data-toggle': 'collapse', 'data-target': '#bs-example-navbar-collapse-1', 'aria-expanded': 'false' },
+	              _react2.default.createElement(
+	                'span',
+	                { className: 'sr-only' },
+	                'Toggle navigation'
+	              ),
+	              _react2.default.createElement('span', { className: 'icon-bar' }),
+	              _react2.default.createElement('span', { className: 'icon-bar' }),
+	              _react2.default.createElement('span', { className: 'icon-bar' })
+	            ),
+	            _react2.default.createElement(
+	              'a',
+	              { className: 'navbar-brand', href: '#' },
+	              'River Informer'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'collapse navbar-collapse', id: 'bs-example-navbar-collapse-1' },
+	            _react2.default.createElement(
+	              'ul',
+	              { className: 'nav navbar-nav' },
+	              _react2.default.createElement(_NavItem2.default, { river: 'clackamas' }),
+	              _react2.default.createElement(_NavItem2.default, { river: 'sandy' })
+	            )
+	          )
+	        )
+	      );
+	    }
+	  }]);
+
+	  return MainNav;
+	}(_react2.default.Component);
+
+	exports.default = MainNav;
 
 /***/ },
 /* 161 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(1);
+	'use strict';
 
-	var NavItem = React.createClass({
-	  displayName: 'NavItem',
-
-	  getInitialState: function () {
-	    return { active: this.setActive() };
-	  },
-
-	  componentDidMount: function () {
-	    window.addEventListener('hashchange', function () {
-	      this.setState({
-	        active: this.setActive()
-	      });
-	    }.bind(this));
-	  },
-
-	  render: function () {
-	    var river = this.props.river;
-	    return React.createElement(
-	      'li',
-	      { className: this.state.active ? 'active' : '' },
-	      React.createElement(
-	        'a',
-	        { href: '#' + river,
-	          className: 'river-selector',
-	          'data-river-name': river },
-	        river
-	      )
-	    );
-	  },
-
-	  setActive: function () {
-	    if (window.location.hash.substr(1) === this.props.river) return true;
-	    return false;
-	  }
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
 	});
 
-	module.exports = NavItem;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var NavItem = function (_React$Component) {
+	  _inherits(NavItem, _React$Component);
+
+	  function NavItem(props) {
+	    _classCallCheck(this, NavItem);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(NavItem).call(this, props));
+
+	    _this.state = { active: _this.setActive() };
+	    return _this;
+	  }
+
+	  _createClass(NavItem, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      window.addEventListener('hashchange', function () {
+	        this.setState({
+	          active: this.setActive()
+	        });
+	      }.bind(this));
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var river = this.props.river;
+	      return _react2.default.createElement(
+	        'li',
+	        { className: this.state.active ? 'active' : '' },
+	        _react2.default.createElement(
+	          'a',
+	          { href: '#' + river,
+	            className: 'river-selector',
+	            'data-river-name': river },
+	          river
+	        )
+	      );
+	    }
+	  }, {
+	    key: 'setActive',
+	    value: function setActive() {
+	      if (window.location.hash.substr(1) === this.props.river) return true;
+	      return false;
+	    }
+	  }]);
+
+	  return NavItem;
+	}(_react2.default.Component);
+
+	exports.default = NavItem;
 
 /***/ },
 /* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(1);
-	var USGS = __webpack_require__(163);
-	var Site = __webpack_require__(166);
+	'use strict';
 
-	var River = React.createClass({
-	  displayName: 'River',
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 
-	  getInitialState: function () {
-	    return {
-	      report: null,
-	      siteData: null
-	    };
-	  },
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	  componentDidMount: function () {
-	    this.fetchRiverData(this.props.riverName);
-	    this.fetchRiverReport(this.props.riverName);
-	  },
+	var _react = __webpack_require__(1);
 
-	  componentWillReceiveProps: function (nextProps) {
-	    this.fetchRiverData(nextProps.riverName);
-	    this.fetchRiverReport(nextProps.riverName);
-	  },
+	var _react2 = _interopRequireDefault(_react);
 
-	  fetchRiverData: function (river) {
-	    var siteCodes = {
-	      clackamas: '14210000',
-	      sandy: '14142500'
-	    };
+	var _helper = __webpack_require__(163);
 
-	    $.get('/site/' + siteCodes[river], function (data) {
-	      if (this.isMounted()) {
-	        this.setState({
-	          siteData: USGS.simplify(data)
+	var _helper2 = _interopRequireDefault(_helper);
+
+	var _Site = __webpack_require__(166);
+
+	var _Site2 = _interopRequireDefault(_Site);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var River = function (_React$Component) {
+	  _inherits(River, _React$Component);
+
+	  function River(props) {
+	    _classCallCheck(this, River);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(River).call(this, props));
+
+	    _this.state = { report: null, siteData: null };
+	    return _this;
+	  }
+
+	  _createClass(River, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.fetchRiverData(this.props.riverName);
+	      this.fetchRiverReport(this.props.riverName);
+	    }
+	  }, {
+	    key: 'componentWillReceiveProps',
+	    value: function componentWillReceiveProps(nextProps) {
+	      this.fetchRiverData(nextProps.riverName);
+	      this.fetchRiverReport(nextProps.riverName);
+	    }
+	  }, {
+	    key: 'fetchRiverData',
+	    value: function fetchRiverData(river) {
+	      var _this2 = this;
+
+	      var siteCodes = {
+	        clackamas: '14210000',
+	        sandy: '14142500'
+	      };
+
+	      $.get('/site/' + siteCodes[river], function (data) {
+	        _this2.setState({
+	          siteData: _helper2.default.simplify(data)
 	        });
-	      }
-	    }.bind(this));
-	  },
-
-	  fetchRiverReport: function (river) {
-	    $.get('/report/' + river, function (data) {
-	      if (this.isMounted()) {
-	        this.setState({
-	          report: data[0]
-	        });
-	      }
-	    }.bind(this));
-	  },
-
-	  render: function () {
-	    var report = null;
-	    var date = null;
-	    var species = null;
-	    var reportParagraphs = null;
-	    if (this.state.report) {
-	      report = this.state.report;
-	      date = '\u2014 ' + report.date;
-	      species = report.species;
-	      reportParagraphs = report.report.map(function (grph, ind) {
-	        return React.createElement(
-	          'p',
-	          { key: ind + new Date().getTime() },
-	          grph
-	        );
 	      });
 	    }
-	    return React.createElement(
-	      'article',
-	      null,
-	      React.createElement(
-	        'div',
-	        { className: 'container-fluid' },
-	        React.createElement(
+	  }, {
+	    key: 'fetchRiverReport',
+	    value: function fetchRiverReport(river) {
+	      var _this3 = this;
+
+	      $.get('/report/' + river, function (data) {
+	        _this3.setState({
+	          report: data[0]
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var report = null;
+	      var date = null;
+	      var species = null;
+	      var reportParagraphs = null;
+	      if (this.state.report) {
+	        report = this.state.report;
+	        date = '— ' + report.date;
+	        species = report.species;
+	        reportParagraphs = report.report.map(function (grph, ind) {
+	          return _react2.default.createElement(
+	            'p',
+	            { key: ind + new Date().getTime() },
+	            grph
+	          );
+	        });
+	      }
+	      return _react2.default.createElement(
+	        'article',
+	        null,
+	        _react2.default.createElement(
 	          'div',
-	          null,
-	          React.createElement(
-	            'h3',
-	            null,
-	            this.props.riverName,
-	            ' river'
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'row' },
-	          React.createElement(
+	          { className: 'container-fluid' },
+	          _react2.default.createElement(
 	            'div',
-	            { className: 'col-md-6' },
-	            React.createElement(
-	              'div',
+	            null,
+	            _react2.default.createElement(
+	              'h3',
 	              null,
-	              React.createElement(
-	                'h4',
-	                null,
-	                'Fishing Report ',
-	                date
-	              ),
-	              React.createElement(
-	                'div',
-	                null,
-	                React.createElement(
-	                  'h6',
-	                  null,
-	                  'Species: ',
-	                  species
-	                ),
-	                reportParagraphs
-	              )
+	              this.props.riverName,
+	              ' river'
 	            )
 	          ),
-	          React.createElement(
+	          _react2.default.createElement(
 	            'div',
-	            { className: 'col-md-6' },
-	            React.createElement(
+	            { className: 'row' },
+	            _react2.default.createElement(
 	              'div',
-	              null,
-	              React.createElement(
-	                'h4',
-	                null,
-	                'River Data'
-	              ),
-	              React.createElement(
+	              { className: 'col-md-6' },
+	              _react2.default.createElement(
 	                'div',
 	                null,
-	                React.createElement(Site, { chartData: this.state.siteData })
+	                _react2.default.createElement(
+	                  'h4',
+	                  null,
+	                  'Fishing Report ',
+	                  date
+	                ),
+	                _react2.default.createElement(
+	                  'div',
+	                  null,
+	                  _react2.default.createElement(
+	                    'h6',
+	                    null,
+	                    'Species: ',
+	                    species
+	                  ),
+	                  reportParagraphs
+	                )
+	              )
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'col-md-6' },
+	              _react2.default.createElement(
+	                'div',
+	                null,
+	                _react2.default.createElement(
+	                  'h4',
+	                  null,
+	                  'River Data'
+	                ),
+	                _react2.default.createElement(
+	                  'div',
+	                  null,
+	                  _react2.default.createElement(_Site2.default, { chartData: this.state.siteData })
+	                )
 	              )
 	            )
 	          )
 	        )
-	      )
-	    );
-	  }
-	});
+	      );
+	    }
+	  }]);
 
-	module.exports = River;
+	  return River;
+	}(_react2.default.Component);
+
+	exports.default = River;
 
 /***/ },
 /* 163 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
 	var _ = __webpack_require__(164);
 
 	var USGS = {
 
-	  simplify: function (data) {
+	  simplify: function simplify(data) {
 	    data = data.value;
 	    var metaDataSource = data.timeSeries[0].sourceInfo;
 	    var obj = {};
@@ -19954,7 +20083,7 @@
 	    return obj;
 	  },
 
-	  setDataParameters: function (tsArray) {
+	  setDataParameters: function setDataParameters(tsArray) {
 	    var parameters = [];
 	    tsArray.map(function (tsItem) {
 	      var param = {};
@@ -32351,95 +32480,162 @@
 /* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(1);
-	var Chart = __webpack_require__(167);
+	'use strict';
 
-	var Site = React.createClass({
-	  displayName: 'Site',
-
-	  render: function () {
-	    var charts = null;
-	    var siteName = null;
-
-	    if (this.props.chartData) {
-	      siteName = this.props.chartData.siteName;
-	      charts = this.props.chartData.parameters.map(function (param, ind) {
-	        return React.createElement(Chart, { dataSet: param, key: ind + new Date().getTime() });
-	      });
-	    }
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(
-	        'h5',
-	        null,
-	        siteName
-	      ),
-	      charts
-	    );
-	  }
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
 	});
 
-	module.exports = Site;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _Chart = __webpack_require__(167);
+
+	var _Chart2 = _interopRequireDefault(_Chart);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Site = function (_React$Component) {
+	  _inherits(Site, _React$Component);
+
+	  function Site() {
+	    _classCallCheck(this, Site);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Site).apply(this, arguments));
+	  }
+
+	  _createClass(Site, [{
+	    key: 'render',
+	    value: function render() {
+	      var charts = null;
+	      var siteName = null;
+
+	      if (this.props.chartData) {
+	        siteName = this.props.chartData.siteName;
+	        charts = this.props.chartData.parameters.map(function (param, ind) {
+	          return _react2.default.createElement(_Chart2.default, { dataSet: param, key: ind + new Date().getTime() });
+	        });
+	      }
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(
+	          'h5',
+	          null,
+	          siteName
+	        ),
+	        charts
+	      );
+	    }
+	  }]);
+
+	  return Site;
+	}(_react2.default.Component);
+
+	exports.default = Site;
 
 /***/ },
 /* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(1);
-	var ChartistGraph = __webpack_require__(168);
-	var _ = __webpack_require__(164);
+	'use strict';
 
-	var Chart = React.createClass({
-	  displayName: 'Chart',
-
-	  render: function () {
-	    var data = this.props.dataSet;
-
-	    var dayGroups = _.groupBy(data.data, function (datum) {
-	      return datum.date;
-	    });
-
-	    var filteredDataSet = _.chain(dayGroups).map(function (dayGroup) {
-	      return _.filter(dayGroup, function (reading) {
-	        var midnight = '00:00:00.000';
-	        var noon = '12:00:00.000';
-	        var time = reading.time;
-	        if (reading.time.match(midnight) || reading.time.match(noon)) return reading;
-	      });
-	    }).filter(function (set) {
-	      return set.length > 0;
-	    }).map(function (set) {
-	      return set.reduce(function (a, b) {
-	        return { date: a.date, value: (Number(a.value) + Number(b.value)) / 2 };
-	      });
-	    }).flatten().value();
-
-	    var simpleLineChartData = {
-	      labels: filteredDataSet.map(function (set) {
-	        return set.date;
-	      }),
-	      series: [filteredDataSet.map(function (set) {
-	        return set.value;
-	      })]
-	    };
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(
-	        'h6',
-	        null,
-	        data.description,
-	        ' -- ',
-	        data.units,
-	        ':'
-	      ),
-	      React.createElement(ChartistGraph, { data: simpleLineChartData, type: 'Line', options: { showPoint: false } })
-	    );
-	  }
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
 	});
 
-	module.exports = Chart;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactChartist = __webpack_require__(168);
+
+	var _reactChartist2 = _interopRequireDefault(_reactChartist);
+
+	var _lodash = __webpack_require__(164);
+
+	var _lodash2 = _interopRequireDefault(_lodash);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Chart = function (_React$Component) {
+	  _inherits(Chart, _React$Component);
+
+	  function Chart() {
+	    _classCallCheck(this, Chart);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Chart).apply(this, arguments));
+	  }
+
+	  _createClass(Chart, [{
+	    key: 'render',
+	    value: function render() {
+	      var data = this.props.dataSet;
+
+	      var dayGroups = _lodash2.default.groupBy(data.data, function (datum) {
+	        return datum.date;
+	      });
+
+	      var filteredDataSet = _lodash2.default.chain(dayGroups).map(function (dayGroup) {
+	        return _lodash2.default.filter(dayGroup, function (reading) {
+	          var midnight = '00:00:00.000';
+	          var noon = '12:00:00.000';
+	          var time = reading.time;
+	          if (reading.time.match(midnight) || reading.time.match(noon)) return reading;
+	        });
+	      }).filter(function (set) {
+	        return set.length > 0;
+	      }).map(function (set) {
+	        return set.reduce(function (a, b) {
+	          return { date: a.date, value: (Number(a.value) + Number(b.value)) / 2 };
+	        });
+	      }).flatten().value();
+
+	      var simpleLineChartData = {
+	        labels: filteredDataSet.map(function (set) {
+	          return set.date;
+	        }),
+	        series: [filteredDataSet.map(function (set) {
+	          return set.value;
+	        })]
+	      };
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(
+	          'h6',
+	          null,
+	          data.description,
+	          ' -- ',
+	          data.units,
+	          ':'
+	        ),
+	        _react2.default.createElement(_reactChartist2.default, { data: simpleLineChartData, type: 'Line', options: { showPoint: false } })
+	      );
+	    }
+	  }]);
+
+	  return Chart;
+	}(_react2.default.Component);
+
+	exports.default = Chart;
 
 /***/ },
 /* 168 */

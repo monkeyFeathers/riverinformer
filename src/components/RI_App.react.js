@@ -1,29 +1,26 @@
-var React = require('react');
-var MainNav = require('./MainNav.react');
-var River = require('./River.react');
+import React from 'react';
+import MainNav from './MainNav.react';
+import River from'./River.react';
 
-var RI_App = React.createClass({
+class RI_App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {route: window.location.hash.substr(1)}
+  }
 
-  getInitialState: function() {
-    return {
-      route: window.location.hash.substr(1),
-    }
-  },
+  componentWillMount() {
+  }
 
-  componentWillMount: function() {
-
-  },
-
-  componentDidMount: function() {
+  componentDidMount() {
     window.addEventListener('hashchange', function() {
       this.setState({
         route: window.location.hash.substr(1)
       })
     }.bind(this))
     if (!window.location.hash) window.location.hash = '#clackamas'
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <section>
         <MainNav selectRiver={this.setRiver}/>
@@ -31,7 +28,5 @@ var RI_App = React.createClass({
       </section>
     );
   }
-
-});
-
+}
 module.exports = RI_App;

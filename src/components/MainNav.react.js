@@ -1,9 +1,9 @@
-var React = require('react');
-var NavItem = require('./NavItem.react');
+import React from 'react';
+import NavItem from './NavItem.react';
 
-var MainNav = React.createClass({
+export default class MainNav extends React.Component {
 
-  render: function() {
+  render() {
     return (
       <nav className="navbar navbar-default">
         <div className="container-fluid">
@@ -25,8 +25,6 @@ var MainNav = React.createClass({
         </div>
       </nav>
     );
-  },
+  }
 
-});
-
-module.exports = MainNav;
+}

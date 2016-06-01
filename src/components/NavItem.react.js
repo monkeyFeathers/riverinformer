@@ -1,19 +1,19 @@
-var React = require('react');
+import React from 'react';
 
-var NavItem = React.createClass({
-  getInitialState: function() {
-    return {active: this.setActive()}
-  },
-
-  componentDidMount: function() {
+export default class NavItem extends React.Component {
+  constructor(props) {
+   super(props);
+   this.state = {active: this.setActive()};
+ }
+  componentDidMount() {
     window.addEventListener('hashchange', function() {
       this.setState({
         active: this.setActive()
       });
     }.bind(this))
-  },
+  }
 
-  render: function(){
+  render(){
     var river = this.props.river;
     return (
       <li className={this.state.active ? 'active': ''}>
@@ -24,12 +24,10 @@ var NavItem = React.createClass({
         </a>
       </li>
     )
-  },
-  
-  setActive: function() {
+  }
+
+  setActive() {
     if (window.location.hash.substr(1) === this.props.river) return true
     return false
   }
-});
-
-module.exports = NavItem
+}
