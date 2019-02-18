@@ -61,6 +61,6 @@
     "superagent": "^1.6.1"
   },
   "engines": {
-    "node": "4.1.2"
+    "node": "4.8.4"
   }
 }
