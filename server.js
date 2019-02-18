@@ -33,7 +33,7 @@ app.get('/weather', function(req,res){
 
 app.get('/report/:river', function(req, res){
   request
-    .get('http://www.dfw.state.or.us/rr/willamette/')
+    .get('https://myodfw.com/recreation-report/fishing-report/willamette-zone')
     .end(function(err, odfwRes) {
       var reports = ReportHelper.extractReports(odfwRes.text)
       var re = new RegExp(req.params.river,'i');

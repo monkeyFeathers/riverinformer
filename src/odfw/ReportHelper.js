@@ -1,11 +1,15 @@
 var cheerio = require('cheerio');
 var _ = require('lodash');
 
+var selectors = {
+    reportDate: '.datetime'
+};
+
 var ReportHelper = {
   extractReports: function(html){
     var $ = cheerio.load(html);
-    var reportDate = $(".topicHEADERS").text()
-    var list = $(".blue_blockwhite").nextAll();
+    var reportDate = $(selectors.reportDate).text()
+    var list = $(".field--name-field-recreation-report .field__item > p");
     var p = list.filter('p');
     var count;
 
