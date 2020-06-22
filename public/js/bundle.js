@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -61,18 +61,18 @@
 
 	ReactDOM.render(React.createElement(RI_App, null), document.getElementById('main'));
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	module.exports = __webpack_require__(2);
 
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -115,9 +115,9 @@
 
 	module.exports = React;
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -213,19 +213,108 @@
 	module.exports = React;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	// shim for using process in browser
-
 	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	} ())
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+
+
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+
+
+
+	}
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -241,7 +330,7 @@
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = setTimeout(cleanUpNextTick);
+	    var timeout = runTimeout(cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -258,7 +347,7 @@
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    clearTimeout(timeout);
+	    runClearTimeout(timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -270,7 +359,7 @@
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
+	        runTimeout(drainQueue);
 	    }
 	};
 
@@ -298,6 +387,10 @@
 	process.removeListener = noop;
 	process.removeAllListeners = noop;
 	process.emit = noop;
+	process.prependListener = noop;
+	process.prependOnceListener = noop;
+
+	process.listeners = function (name) { return [] }
 
 	process.binding = function (name) {
 	    throw new Error('process.binding is not supported');
@@ -310,9 +403,9 @@
 	process.umask = function() { return 0; };
 
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -345,9 +438,9 @@
 
 	module.exports = ReactCurrentOwner;
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -478,9 +571,9 @@
 	module.exports = ReactDOMTextComponent;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 7 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -613,9 +706,9 @@
 	module.exports = DOMChildrenOperations;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 8 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -764,9 +857,9 @@
 	module.exports = Danger;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 9 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -805,9 +898,9 @@
 
 	module.exports = ExecutionEnvironment;
 
-/***/ },
+/***/ }),
 /* 10 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -895,9 +988,9 @@
 	module.exports = createNodesFromMarkup;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 11 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -985,9 +1078,9 @@
 
 	module.exports = createArrayFromMixed;
 
-/***/ },
+/***/ }),
 /* 12 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1048,9 +1141,9 @@
 	module.exports = toArray;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 13 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1104,9 +1197,9 @@
 	module.exports = invariant;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 14 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1205,9 +1298,9 @@
 	module.exports = getMarkupWrap;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 15 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1248,9 +1341,9 @@
 
 	module.exports = emptyFunction;
 
-/***/ },
+/***/ }),
 /* 16 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1285,9 +1378,9 @@
 
 	module.exports = ReactMultiChildUpdateTypes;
 
-/***/ },
+/***/ }),
 /* 17 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1339,9 +1432,9 @@
 	module.exports = keyMirror;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 18 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1441,9 +1534,9 @@
 	module.exports = ReactPerf;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 19 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1536,9 +1629,9 @@
 
 	module.exports = setInnerHTML;
 
-/***/ },
+/***/ }),
 /* 20 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1581,9 +1674,9 @@
 
 	module.exports = setTextContent;
 
-/***/ },
+/***/ }),
 /* 21 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1624,9 +1717,9 @@
 
 	module.exports = escapeTextContentForBrowser;
 
-/***/ },
+/***/ }),
 /* 22 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -1855,9 +1948,9 @@
 	module.exports = DOMPropertyOperations;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 23 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -2095,9 +2188,9 @@
 	module.exports = DOMProperty;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 24 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -2126,9 +2219,9 @@
 
 	module.exports = quoteAttributeValueForBrowser;
 
-/***/ },
+/***/ }),
 /* 25 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -2189,9 +2282,9 @@
 	module.exports = warning;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 26 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -2235,9 +2328,9 @@
 
 	module.exports = ReactComponentBrowserEnvironment;
 
-/***/ },
+/***/ }),
 /* 27 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -2335,9 +2428,9 @@
 	module.exports = ReactDOMIDOperations;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 28 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -3191,9 +3284,9 @@
 	module.exports = ReactMount;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 29 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -3520,9 +3613,9 @@
 
 	module.exports = ReactBrowserEventEmitter;
 
-/***/ },
+/***/ }),
 /* 30 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -3617,9 +3710,9 @@
 
 	module.exports = EventConstants;
 
-/***/ },
+/***/ }),
 /* 31 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -3902,9 +3995,9 @@
 	module.exports = EventPluginHub;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 32 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4128,9 +4221,9 @@
 	module.exports = EventPluginRegistry;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 33 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4336,9 +4429,9 @@
 	module.exports = EventPluginUtils;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 34 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4419,9 +4512,9 @@
 	module.exports = ReactErrorUtils;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 35 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -4484,9 +4577,9 @@
 	module.exports = accumulateInto;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 36 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4518,9 +4611,9 @@
 
 	module.exports = forEachAccumulated;
 
-/***/ },
+/***/ }),
 /* 37 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4561,9 +4654,9 @@
 
 	module.exports = ReactEventEmitterMixin;
 
-/***/ },
+/***/ }),
 /* 38 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4593,9 +4686,9 @@
 
 	module.exports = ViewportMetrics;
 
-/***/ },
+/***/ }),
 /* 39 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -4645,9 +4738,9 @@
 
 	module.exports = assign;
 
-/***/ },
+/***/ }),
 /* 40 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4710,9 +4803,9 @@
 
 	module.exports = isEventSupported;
 
-/***/ },
+/***/ }),
 /* 41 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -4733,9 +4826,9 @@
 
 	module.exports = ReactDOMFeatureFlags;
 
-/***/ },
+/***/ }),
 /* 42 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -4986,9 +5079,9 @@
 	module.exports = ReactElement;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 43 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5016,9 +5109,9 @@
 	module.exports = canDefineProperty;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 44 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -5069,9 +5162,9 @@
 
 	module.exports = ReactEmptyComponentRegistry;
 
-/***/ },
+/***/ }),
 /* 45 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5377,9 +5470,9 @@
 	module.exports = ReactInstanceHandles;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 46 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5411,9 +5504,9 @@
 
 	module.exports = ReactRootIndex;
 
-/***/ },
+/***/ }),
 /* 47 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5463,9 +5556,9 @@
 
 	module.exports = ReactInstanceMap;
 
-/***/ },
+/***/ }),
 /* 48 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5513,9 +5606,9 @@
 
 	module.exports = ReactMarkupChecksum;
 
-/***/ },
+/***/ }),
 /* 49 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5560,9 +5653,9 @@
 
 	module.exports = adler32;
 
-/***/ },
+/***/ }),
 /* 50 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5672,9 +5765,9 @@
 
 	module.exports = ReactReconciler;
 
-/***/ },
+/***/ }),
 /* 51 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5755,9 +5848,9 @@
 
 	module.exports = ReactRef;
 
-/***/ },
+/***/ }),
 /* 52 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -5852,9 +5945,9 @@
 	module.exports = ReactOwner;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 53 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2015, Facebook, Inc.
@@ -6115,9 +6208,9 @@
 	module.exports = ReactUpdateQueue;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 54 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6344,9 +6437,9 @@
 	module.exports = ReactUpdates;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 55 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6443,9 +6536,9 @@
 	module.exports = CallbackQueue;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 56 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6568,9 +6661,9 @@
 	module.exports = PooledClass;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 57 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6805,9 +6898,9 @@
 	module.exports = Transaction;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 58 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6831,9 +6924,9 @@
 	module.exports = emptyObject;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 59 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6891,9 +6984,9 @@
 
 	module.exports = containsNode;
 
-/***/ },
+/***/ }),
 /* 60 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6921,9 +7014,9 @@
 
 	module.exports = isTextNode;
 
-/***/ },
+/***/ }),
 /* 61 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -6949,9 +7042,9 @@
 
 	module.exports = isNode;
 
-/***/ },
+/***/ }),
 /* 62 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -7067,9 +7160,9 @@
 	module.exports = instantiateReactComponent;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 63 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -7448,7 +7541,7 @@
 	          // This is intentionally an invariant that gets caught. It's the same
 	          // behavior as without this statement except with a better message.
 	          !(typeof propTypes[propName] === 'function') ? process.env.NODE_ENV !== 'production' ? invariant(false, '%s: %s type `%s` is invalid; it must be a function, usually ' + 'from React.PropTypes.', componentName || 'React class', ReactPropTypeLocationNames[location], propName) : invariant(false) : undefined;
-	          error = propTypes[propName](props, propName, componentName, location);
+	          error = propTypes[propName](props, propName, componentName, location, null, 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
 	        } catch (ex) {
 	          error = ex;
 	        }
@@ -7767,9 +7860,9 @@
 	module.exports = ReactCompositeComponent;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 64 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -7824,9 +7917,9 @@
 	module.exports = ReactComponentEnvironment;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 65 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -7851,9 +7944,9 @@
 
 	module.exports = ReactPropTypeLocations;
 
-/***/ },
+/***/ }),
 /* 66 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -7881,9 +7974,9 @@
 	module.exports = ReactPropTypeLocationNames;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 67 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -7929,9 +8022,9 @@
 
 	module.exports = shouldUpdateReactComponent;
 
-/***/ },
+/***/ }),
 /* 68 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -7960,6 +8053,10 @@
 	  }
 	};
 
+	function registerNullComponentID() {
+	  ReactEmptyComponentRegistry.registerNullComponentID(this._rootNodeID);
+	}
+
 	var ReactEmptyComponent = function (instantiate) {
 	  this._currentElement = null;
 	  this._rootNodeID = null;
@@ -7968,7 +8065,7 @@
 	assign(ReactEmptyComponent.prototype, {
 	  construct: function (element) {},
 	  mountComponent: function (rootID, transaction, context) {
-	    ReactEmptyComponentRegistry.registerNullComponentID(rootID);
+	    transaction.getReactMountReady().enqueue(registerNullComponentID, this);
 	    this._rootNodeID = rootID;
 	    return ReactReconciler.mountComponent(this._renderedComponent, rootID, transaction, context);
 	  },
@@ -7985,9 +8082,9 @@
 
 	module.exports = ReactEmptyComponent;
 
-/***/ },
+/***/ }),
 /* 69 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -8085,9 +8182,9 @@
 	module.exports = ReactNativeComponent;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 70 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2015, Facebook, Inc.
@@ -8454,9 +8551,9 @@
 	module.exports = validateDOMNesting;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 71 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -8557,9 +8654,9 @@
 	};
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 72 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015 Facebook, Inc.
@@ -8967,9 +9064,9 @@
 
 	module.exports = BeforeInputEventPlugin;
 
-/***/ },
+/***/ }),
 /* 73 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9108,9 +9205,9 @@
 	module.exports = EventPropagators;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 74 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9208,9 +9305,9 @@
 
 	module.exports = FallbackCompositionState;
 
-/***/ },
+/***/ }),
 /* 75 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9246,9 +9343,9 @@
 
 	module.exports = getTextContentAccessor;
 
-/***/ },
+/***/ }),
 /* 76 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9288,9 +9385,9 @@
 
 	module.exports = SyntheticCompositionEvent;
 
-/***/ },
+/***/ }),
 /* 77 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9318,6 +9415,7 @@
 	 */
 	var EventInterface = {
 	  type: null,
+	  target: null,
 	  // currentTarget is set when dispatching; no use in copying it here
 	  currentTarget: emptyFunction.thatReturnsNull,
 	  eventPhase: null,
@@ -9351,8 +9449,6 @@
 	  this.dispatchConfig = dispatchConfig;
 	  this.dispatchMarker = dispatchMarker;
 	  this.nativeEvent = nativeEvent;
-	  this.target = nativeEventTarget;
-	  this.currentTarget = nativeEventTarget;
 
 	  var Interface = this.constructor.Interface;
 	  for (var propName in Interface) {
@@ -9363,7 +9459,11 @@
 	    if (normalize) {
 	      this[propName] = normalize(nativeEvent);
 	    } else {
-	      this[propName] = nativeEvent[propName];
+	      if (propName === 'target') {
+	        this.target = nativeEventTarget;
+	      } else {
+	        this[propName] = nativeEvent[propName];
+	      }
 	    }
 	  }
 
@@ -9471,9 +9571,9 @@
 	module.exports = SyntheticEvent;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 78 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9514,9 +9614,9 @@
 
 	module.exports = SyntheticInputEvent;
 
-/***/ },
+/***/ }),
 /* 79 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9554,9 +9654,9 @@
 
 	module.exports = keyOf;
 
-/***/ },
+/***/ }),
 /* 80 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9880,9 +9980,9 @@
 
 	module.exports = ChangeEventPlugin;
 
-/***/ },
+/***/ }),
 /* 81 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9914,9 +10014,9 @@
 
 	module.exports = getEventTarget;
 
-/***/ },
+/***/ }),
 /* 82 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9959,9 +10059,9 @@
 
 	module.exports = isTextInputElement;
 
-/***/ },
+/***/ }),
 /* 83 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -9987,9 +10087,9 @@
 
 	module.exports = ClientReactRootIndex;
 
-/***/ },
+/***/ }),
 /* 84 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10019,9 +10119,9 @@
 
 	module.exports = DefaultEventPluginOrder;
 
-/***/ },
+/***/ }),
 /* 85 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10148,9 +10248,9 @@
 
 	module.exports = EnterLeaveEventPlugin;
 
-/***/ },
+/***/ }),
 /* 86 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10226,9 +10326,9 @@
 
 	module.exports = SyntheticMouseEvent;
 
-/***/ },
+/***/ }),
 /* 87 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10291,9 +10391,9 @@
 
 	module.exports = SyntheticUIEvent;
 
-/***/ },
+/***/ }),
 /* 88 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10340,9 +10440,9 @@
 
 	module.exports = getEventModifierState;
 
-/***/ },
+/***/ }),
 /* 89 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10575,9 +10675,9 @@
 
 	module.exports = HTMLDOMPropertyConfig;
 
-/***/ },
+/***/ }),
 /* 90 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10617,9 +10717,9 @@
 	module.exports = ReactBrowserComponentMixin;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 91 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10672,9 +10772,9 @@
 	module.exports = findDOMNode;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 92 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -10744,9 +10844,9 @@
 
 	module.exports = ReactDefaultBatchingStrategy;
 
-/***/ },
+/***/ }),
 /* 93 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -11712,9 +11812,9 @@
 	module.exports = ReactDOMComponent;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 94 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -11753,9 +11853,9 @@
 
 	module.exports = AutoFocusUtils;
 
-/***/ },
+/***/ }),
 /* 95 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -11784,9 +11884,9 @@
 
 	module.exports = focusNode;
 
-/***/ },
+/***/ }),
 /* 96 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -11965,9 +12065,9 @@
 	module.exports = CSSPropertyOperations;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 97 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12109,9 +12209,9 @@
 
 	module.exports = CSSProperty;
 
-/***/ },
+/***/ }),
 /* 98 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12154,9 +12254,9 @@
 
 	module.exports = camelizeStyleName;
 
-/***/ },
+/***/ }),
 /* 99 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12191,9 +12291,9 @@
 
 	module.exports = camelize;
 
-/***/ },
+/***/ }),
 /* 100 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12251,9 +12351,9 @@
 
 	module.exports = dangerousStyleValue;
 
-/***/ },
+/***/ }),
 /* 101 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12295,9 +12395,9 @@
 
 	module.exports = hyphenateStyleName;
 
-/***/ },
+/***/ }),
 /* 102 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12333,9 +12433,9 @@
 
 	module.exports = hyphenate;
 
-/***/ },
+/***/ }),
 /* 103 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12369,9 +12469,9 @@
 
 	module.exports = memoizeStringOnly;
 
-/***/ },
+/***/ }),
 /* 104 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12424,9 +12524,9 @@
 
 	module.exports = ReactDOMButton;
 
-/***/ },
+/***/ }),
 /* 105 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12583,9 +12683,9 @@
 	module.exports = ReactDOMInput;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 106 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12665,7 +12765,7 @@
 	  checkPropTypes: function (tagName, props, owner) {
 	    for (var propName in propTypes) {
 	      if (propTypes.hasOwnProperty(propName)) {
-	        var error = propTypes[propName](props, propName, tagName, ReactPropTypeLocations.prop);
+	        var error = propTypes[propName](props, propName, tagName, ReactPropTypeLocations.prop, null, 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
 	      }
 	      if (error instanceof Error && !(error.message in loggedTypeFailures)) {
 	        // Only monitor this failure once because there tends to be a lot of the
@@ -12723,9 +12823,9 @@
 	module.exports = LinkedValueUtils;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 107 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -12866,7 +12966,7 @@
 	      return new Error('Invalid ' + locationName + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an array.'));
 	    }
 	    for (var i = 0; i < propValue.length; i++) {
-	      var error = typeChecker(propValue, i, componentName, location, propFullName + '[' + i + ']');
+	      var error = typeChecker(propValue, i, componentName, location, propFullName + '[' + i + ']', 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
 	      if (error instanceof Error) {
 	        return error;
 	      }
@@ -12932,7 +13032,7 @@
 	    }
 	    for (var key in propValue) {
 	      if (propValue.hasOwnProperty(key)) {
-	        var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key);
+	        var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key, 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
 	        if (error instanceof Error) {
 	          return error;
 	        }
@@ -12953,7 +13053,7 @@
 	  function validate(props, propName, componentName, location, propFullName) {
 	    for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
 	      var checker = arrayOfTypeCheckers[i];
-	      if (checker(props, propName, componentName, location, propFullName) == null) {
+	      if (checker(props, propName, componentName, location, propFullName, 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED') == null) {
 	        return null;
 	      }
 	    }
@@ -12988,7 +13088,7 @@
 	      if (!checker) {
 	        continue;
 	      }
-	      var error = checker(propValue, key, componentName, location, propFullName + '.' + key);
+	      var error = checker(propValue, key, componentName, location, propFullName + '.' + key, 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
 	      if (error) {
 	        return error;
 	      }
@@ -13084,9 +13184,9 @@
 
 	module.exports = ReactPropTypes;
 
-/***/ },
+/***/ }),
 /* 108 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -13129,9 +13229,9 @@
 
 	module.exports = getIteratorFn;
 
-/***/ },
+/***/ }),
 /* 109 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -13212,7 +13312,10 @@
 	      }
 	    });
 
-	    nativeProps.children = content;
+	    if (content) {
+	      nativeProps.children = content;
+	    }
+
 	    return nativeProps;
 	  }
 
@@ -13221,9 +13324,9 @@
 	module.exports = ReactDOMOption;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 110 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -13408,9 +13511,9 @@
 
 	module.exports = ReactChildren;
 
-/***/ },
+/***/ }),
 /* 111 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -13603,9 +13706,9 @@
 	module.exports = traverseAllChildren;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 112 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -13797,9 +13900,9 @@
 	module.exports = ReactDOMSelect;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 113 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -13916,9 +14019,9 @@
 	module.exports = ReactDOMTextarea;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 114 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -14418,9 +14521,9 @@
 	module.exports = ReactMultiChild;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 115 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -14546,9 +14649,9 @@
 	module.exports = ReactChildReconciler;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 116 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -14600,9 +14703,9 @@
 	module.exports = flattenChildren;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 117 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -14655,9 +14758,9 @@
 
 	module.exports = shallowEqual;
 
-/***/ },
+/***/ }),
 /* 118 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -14871,9 +14974,9 @@
 
 	module.exports = ReactEventListener;
 
-/***/ },
+/***/ }),
 /* 119 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -14961,9 +15064,9 @@
 	module.exports = EventListener;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 120 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -15004,9 +15107,9 @@
 
 	module.exports = getUnboundedScrollPosition;
 
-/***/ },
+/***/ }),
 /* 121 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -15047,9 +15150,9 @@
 
 	module.exports = ReactInjection;
 
-/***/ },
+/***/ }),
 /* 122 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -15824,9 +15927,9 @@
 	module.exports = ReactClass;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 123 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -15952,9 +16055,9 @@
 	module.exports = ReactComponent;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 124 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2015, Facebook, Inc.
@@ -16076,9 +16179,9 @@
 	module.exports = ReactNoopUpdateQueue;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 125 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -16232,9 +16335,9 @@
 
 	module.exports = ReactReconcileTransaction;
 
-/***/ },
+/***/ }),
 /* 126 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -16361,9 +16464,9 @@
 
 	module.exports = ReactInputSelection;
 
-/***/ },
+/***/ }),
 /* 127 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -16578,9 +16681,9 @@
 
 	module.exports = ReactDOMSelection;
 
-/***/ },
+/***/ }),
 /* 128 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -16656,9 +16759,9 @@
 
 	module.exports = getNodeForCharacterOffset;
 
-/***/ },
+/***/ }),
 /* 129 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -16696,9 +16799,9 @@
 
 	module.exports = getActiveElement;
 
-/***/ },
+/***/ }),
 /* 130 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -16902,9 +17005,9 @@
 
 	module.exports = SelectEventPlugin;
 
-/***/ },
+/***/ }),
 /* 131 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -16936,9 +17039,9 @@
 
 	module.exports = ServerReactRootIndex;
 
-/***/ },
+/***/ }),
 /* 132 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17529,9 +17632,9 @@
 	module.exports = SimpleEventPlugin;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 133 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17573,9 +17676,9 @@
 
 	module.exports = SyntheticClipboardEvent;
 
-/***/ },
+/***/ }),
 /* 134 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17615,9 +17718,9 @@
 
 	module.exports = SyntheticFocusEvent;
 
-/***/ },
+/***/ }),
 /* 135 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17705,9 +17808,9 @@
 
 	module.exports = SyntheticKeyboardEvent;
 
-/***/ },
+/***/ }),
 /* 136 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17760,9 +17863,9 @@
 
 	module.exports = getEventCharCode;
 
-/***/ },
+/***/ }),
 /* 137 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17868,9 +17971,9 @@
 
 	module.exports = getEventKey;
 
-/***/ },
+/***/ }),
 /* 138 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17910,9 +18013,9 @@
 
 	module.exports = SyntheticDragEvent;
 
-/***/ },
+/***/ }),
 /* 139 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -17961,9 +18064,9 @@
 
 	module.exports = SyntheticTouchEvent;
 
-/***/ },
+/***/ }),
 /* 140 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18021,9 +18124,9 @@
 
 	module.exports = SyntheticWheelEvent;
 
-/***/ },
+/***/ }),
 /* 141 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18153,9 +18256,9 @@
 
 	module.exports = SVGDOMPropertyConfig;
 
-/***/ },
+/***/ }),
 /* 142 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18395,9 +18498,9 @@
 
 	module.exports = ReactDefaultPerf;
 
-/***/ },
+/***/ }),
 /* 143 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18601,9 +18704,9 @@
 
 	module.exports = ReactDefaultPerfAnalysis;
 
-/***/ },
+/***/ }),
 /* 144 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18640,9 +18743,9 @@
 
 	module.exports = performanceNow;
 
-/***/ },
+/***/ }),
 /* 145 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18668,9 +18771,9 @@
 
 	module.exports = performance || {};
 
-/***/ },
+/***/ }),
 /* 146 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18685,11 +18788,11 @@
 
 	'use strict';
 
-	module.exports = '0.14.6';
+	module.exports = '0.14.9';
 
-/***/ },
+/***/ }),
 /* 147 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18708,9 +18811,9 @@
 
 	module.exports = ReactMount.renderSubtreeIntoContainer;
 
-/***/ },
+/***/ }),
 /* 148 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18739,9 +18842,9 @@
 
 	module.exports = ReactDOMServer;
 
-/***/ },
+/***/ }),
 /* 149 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -18828,9 +18931,9 @@
 	};
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 150 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -18856,9 +18959,9 @@
 
 	module.exports = ReactServerBatchingStrategy;
 
-/***/ },
+/***/ }),
 /* 151 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -18948,9 +19051,9 @@
 
 	module.exports = ReactServerRenderingTransaction;
 
-/***/ },
+/***/ }),
 /* 152 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -19028,9 +19131,9 @@
 	module.exports = React;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 153 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -19211,9 +19314,9 @@
 	module.exports = ReactDOMFactories;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 154 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
@@ -19392,7 +19495,7 @@
 	        // This is intentionally an invariant that gets caught. It's the same
 	        // behavior as without this statement except with a better message.
 	        !(typeof propTypes[propName] === 'function') ? process.env.NODE_ENV !== 'production' ? invariant(false, '%s: %s type `%s` is invalid; it must be a function, usually from ' + 'React.PropTypes.', componentName || 'React class', ReactPropTypeLocationNames[location], propName) : invariant(false) : undefined;
-	        error = propTypes[propName](props, propName, componentName, location);
+	        error = propTypes[propName](props, propName, componentName, location, null, 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
 	      } catch (ex) {
 	        error = ex;
 	      }
@@ -19498,9 +19601,9 @@
 	module.exports = ReactElementValidator;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 155 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -19554,9 +19657,9 @@
 
 	module.exports = mapObject;
 
-/***/ },
+/***/ }),
 /* 156 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -19593,9 +19696,9 @@
 	module.exports = onlyChild;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 157 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
@@ -19647,18 +19750,18 @@
 	module.exports = deprecated;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
-/***/ },
+/***/ }),
 /* 158 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	module.exports = __webpack_require__(3);
 
 
-/***/ },
+/***/ }),
 /* 159 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -19690,7 +19793,7 @@
 	  function RI_App(props) {
 	    _classCallCheck(this, RI_App);
 
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(RI_App).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (RI_App.__proto__ || Object.getPrototypeOf(RI_App)).call(this, props));
 
 	    _this.state = { route: window.location.hash.substr(1) };
 	    return _this;
@@ -19728,9 +19831,9 @@
 
 	module.exports = RI_App;
 
-/***/ },
+/***/ }),
 /* 160 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -19762,7 +19865,7 @@
 	  function MainNav() {
 	    _classCallCheck(this, MainNav);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(MainNav).apply(this, arguments));
+	    return _possibleConstructorReturn(this, (MainNav.__proto__ || Object.getPrototypeOf(MainNav)).apply(this, arguments));
 	  }
 
 	  _createClass(MainNav, [{
@@ -19815,9 +19918,9 @@
 
 	exports.default = MainNav;
 
-/***/ },
+/***/ }),
 /* 161 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -19845,7 +19948,7 @@
 	  function NavItem(props) {
 	    _classCallCheck(this, NavItem);
 
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(NavItem).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (NavItem.__proto__ || Object.getPrototypeOf(NavItem)).call(this, props));
 
 	    _this.state = { active: _this.setActive() };
 	    return _this;
@@ -19889,9 +19992,9 @@
 
 	exports.default = NavItem;
 
-/***/ },
+/***/ }),
 /* 162 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -19927,9 +20030,9 @@
 	  function River(props) {
 	    _classCallCheck(this, River);
 
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(River).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (River.__proto__ || Object.getPrototypeOf(River)).call(this, props));
 
-	    _this.state = { report: null, siteData: null };
+	    _this.state = { report: null, siteData: null, reportLoading: true, dataLoading: true };
 	    return _this;
 	  }
 
@@ -19952,7 +20055,7 @@
 	    value: function fetchRiverData(river) {
 	      var _this2 = this;
 
-	      this.setState({ siteData: null });
+	      this.setState({ siteData: null, dataLoading: true });
 	      var siteCodes = {
 	        clackamas: '14210000',
 	        sandy: '14142500'
@@ -19960,7 +20063,8 @@
 
 	      $.get('/site/' + siteCodes[river], function (data) {
 	        _this2.setState({
-	          siteData: _helper2.default.simplify(data)
+	          siteData: _helper2.default.simplify(data),
+	          dataLoading: false
 	        });
 	      });
 	    }
@@ -19969,10 +20073,11 @@
 	    value: function fetchRiverReport(river) {
 	      var _this3 = this;
 
-	      this.setState({ report: null });
+	      this.setState({ report: null, reportLoading: true });
 	      $.get('/report/' + river, function (data) {
 	        _this3.setState({
-	          report: data[0]
+	          report: data[0],
+	          reportLoading: false
 	        });
 	      });
 	    }
@@ -19982,21 +20087,52 @@
 	      var report = null;
 	      var date = null;
 	      var species = null;
-	      var reportParagraphs = null;
+	      var content = null;
+	      var style = { marginBottom: "3rem" };
+
 	      if (this.state.report) {
 	        report = this.state.report;
-	        date = '— ' + report.date;
+	        date = '\u2014 ' + report.date;
 	        species = report.species;
-	        reportParagraphs = report.report.map(function (grph, ind) {
-	          return _react2.default.createElement(
-	            'p',
-	            { key: ind + new Date().getTime() },
-	            grph
-	          );
-	        });
+	        content = _react2.default.createElement(
+	          'div',
+	          { style: style },
+	          _react2.default.createElement(
+	            'h4',
+	            null,
+	            'Fishing Report ',
+	            date
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            null,
+	            _react2.default.createElement(
+	              'h6',
+	              null,
+	              'Species: ',
+	              species
+	            ),
+	            report.report.map(function (grph, ind) {
+	              return _react2.default.createElement(
+	                'p',
+	                { key: ind + new Date().getTime() },
+	                grph
+	              );
+	            })
+	          )
+	        );
 	      } else {
-	        reportParagraphs = _react2.default.createElement('img', { src: '/img/gps.gif' });
+	        content = _react2.default.createElement(
+	          'div',
+	          { style: style },
+	          _react2.default.createElement(
+	            'h4',
+	            null,
+	            'Fishing Report Not Available'
+	          )
+	        );
 	      }
+
 	      return _react2.default.createElement(
 	        'article',
 	        null,
@@ -20019,27 +20155,11 @@
 	            _react2.default.createElement(
 	              'div',
 	              { className: 'col-md-6' },
-	              _react2.default.createElement(
+	              this.state.reportLoading ? _react2.default.createElement(
 	                'div',
-	                null,
-	                _react2.default.createElement(
-	                  'h4',
-	                  null,
-	                  'Fishing Report ',
-	                  date
-	                ),
-	                _react2.default.createElement(
-	                  'div',
-	                  null,
-	                  _react2.default.createElement(
-	                    'h6',
-	                    null,
-	                    'Species: ',
-	                    species
-	                  ),
-	                  reportParagraphs
-	                )
-	              )
+	                { style: style },
+	                _react2.default.createElement('img', { src: '/img/gps.gif' })
+	              ) : content
 	            ),
 	            _react2.default.createElement(
 	              'div',
@@ -20070,9 +20190,9 @@
 
 	exports.default = River;
 
-/***/ },
+/***/ }),
 /* 163 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -20110,9 +20230,9 @@
 
 	module.exports = USGS;
 
-/***/ },
+/***/ }),
 /* 164 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/**
 	 * @license
@@ -32468,9 +32588,9 @@
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(165)(module), (function() { return this; }())))
 
-/***/ },
+/***/ }),
 /* 165 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = function(module) {
 		if(!module.webpackPolyfill) {
@@ -32484,9 +32604,9 @@
 	}
 
 
-/***/ },
+/***/ }),
 /* 166 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -32518,7 +32638,7 @@
 	  function Site() {
 	    _classCallCheck(this, Site);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Site).apply(this, arguments));
+	    return _possibleConstructorReturn(this, (Site.__proto__ || Object.getPrototypeOf(Site)).apply(this, arguments));
 	  }
 
 	  _createClass(Site, [{
@@ -32553,9 +32673,9 @@
 
 	exports.default = Site;
 
-/***/ },
+/***/ }),
 /* 167 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -32591,7 +32711,7 @@
 	  function Chart() {
 	    _classCallCheck(this, Chart);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Chart).apply(this, arguments));
+	    return _possibleConstructorReturn(this, (Chart.__proto__ || Object.getPrototypeOf(Chart)).apply(this, arguments));
 	  }
 
 	  _createClass(Chart, [{
@@ -32647,9 +32767,9 @@
 
 	exports.default = Chart;
 
-/***/ },
+/***/ }),
 /* 168 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -32670,8 +32790,6 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(158);
 
 	var ChartistGraph = (function (_Component) {
 	  _inherits(ChartistGraph, _Component);
@@ -32718,7 +32836,7 @@
 	      if (this.chartist) {
 	        this.chartist.update(data, options, responsiveOptions);
 	      } else {
-	        this.chartist = new Chartist[type]((0, _reactDom.findDOMNode)(this), data, options, responsiveOptions);
+	        this.chartist = new Chartist[type](this.refs.chart, data, options, responsiveOptions);
 
 	        if (config.listener) {
 	          for (event in config.listener) {
@@ -32735,7 +32853,8 @@
 	    key: 'render',
 	    value: function render() {
 	      var className = this.props.className ? ' ' + this.props.className : '';
-	      return _react2['default'].createElement('div', { className: 'ct-chart' + className });
+	      var style = this.props.style ? this.props.style : {};
+	      return _react2['default'].createElement('div', { className: 'ct-chart' + className, ref: 'chart', style: style });
 	    }
 	  }]);
 
@@ -32747,7 +32866,8 @@
 	  data: _react2['default'].PropTypes.object.isRequired,
 	  className: _react2['default'].PropTypes.string,
 	  options: _react2['default'].PropTypes.object,
-	  responsiveOptions: _react2['default'].PropTypes.array
+	  responsiveOptions: _react2['default'].PropTypes.array,
+	  style: _react2['default'].PropTypes.object
 	};
 
 	exports['default'] = ChartistGraph;
@@ -32755,9 +32875,9 @@
 
 
 
-/***/ },
+/***/ }),
 /* 169 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (root, factory) {
 	  if (true) {
@@ -32775,10 +32895,11 @@
 	  }
 	}(this, function () {
 
-	/* Chartist.js 0.9.5
-	 * Copyright © 2015 Gion Kunz
-	 * Free to use under the WTFPL license.
-	 * http://www.wtfpl.net/
+	/* Chartist.js 0.9.8
+	 * Copyright © 2016 Gion Kunz
+	 * Free to use under either the WTFPL license or the MIT license.
+	 * https://raw.githubusercontent.com/gionkunz/chartist-js/master/LICENSE-WTFPL
+	 * https://raw.githubusercontent.com/gionkunz/chartist-js/master/LICENSE-MIT
 	 */
 	/**
 	 * The core module of Chartist that is mainly providing static functions and higher level functions for chart modules.
@@ -32786,11 +32907,25 @@
 	 * @module Chartist.Core
 	 */
 	var Chartist = {
-	  version: '0.9.5'
+	  version: '0.9.8'
 	};
 
 	(function (window, document, Chartist) {
 	  'use strict';
+
+	  /**
+	   * This object contains all namespaces used within Chartist.
+	   *
+	   * @memberof Chartist.Core
+	   * @type {{svg: string, xmlns: string, xhtml: string, xlink: string, ct: string}}
+	   */
+	  Chartist.namespaces = {
+	    svg: 'http://www.w3.org/2000/svg',
+	    xmlns: 'http://www.w3.org/2000/xmlns/',
+	    xhtml: 'http://www.w3.org/1999/xhtml',
+	    xlink: 'http://www.w3.org/1999/xlink',
+	    ct: 'http://gionkunz.github.com/chartist-js/ct'
+	  };
 
 	  /**
 	   * Helps to simplify functional style code
@@ -33072,7 +33207,7 @@
 	    // Check if there is a previous SVG element in the container that contains the Chartist XML namespace and remove it
 	    // Since the DOM API does not support namespaces we need to manually search the returned list http://www.w3.org/TR/selectors-api/
 	    Array.prototype.slice.call(container.querySelectorAll('svg')).filter(function filterChartistSvgObjects(svg) {
-	      return svg.getAttributeNS('http://www.w3.org/2000/xmlns/', Chartist.xmlNs.prefix);
+	      return svg.getAttributeNS(Chartist.namespaces.xmlns, 'ct');
 	    }).forEach(function removePreviousElement(svg) {
 	      container.removeChild(svg);
 	    });
@@ -33091,6 +33226,44 @@
 	    return svg;
 	  };
 
+	  /**
+	   * Ensures that the data object passed as second argument to the charts is present and correctly initialized.
+	   *
+	   * @param  {Object} data The data object that is passed as second argument to the charts
+	   * @return {Object} The normalized data object
+	   */
+	  Chartist.normalizeData = function(data) {
+	    // Ensure data is present otherwise enforce
+	    data = data || {series: [], labels: []};
+	    data.series = data.series || [];
+	    data.labels = data.labels || [];
+
+	    // Check if we should generate some labels based on existing series data
+	    if (data.series.length > 0 && data.labels.length === 0) {
+	      var normalized = Chartist.getDataArray(data),
+	          labelCount;
+
+	      // If all elements of the normalized data array are arrays we're dealing with
+	      // data from Bar or Line charts and we need to find the largest series if they are un-even
+	      if (normalized.every(function(value) {
+	        return value instanceof Array;
+	      })) {
+	        // Getting the series with the the most elements
+	        labelCount = Math.max.apply(null, normalized.map(function(series) {
+	          return series.length;
+	        }));
+	      } else {
+	        // We're dealing with Pie data so we just take the normalized array length
+	        labelCount = normalized.length;
+	      }
+
+	      // Setting labels to an array with emptry strings using our labelCount estimated above
+	      data.labels = Chartist.times(labelCount).map(function() {
+	        return '';
+	      });
+	    }
+	    return data;
+	  };
 
 	  /**
 	   * Reverses the series, labels and series data arrays.
@@ -33293,8 +33466,12 @@
 	      } else if (highLow.low < 0) {
 	        // If we have the same negative value for the bounds we set bounds.high to 0
 	        highLow.high = 0;
-	      } else {
+	      } else if (highLow.high > 0) {
 	        // If we have the same positive value for the bounds we set bounds.low to 0
+	        highLow.low = 0;
+	      } else {
+	        // If data array was empty, values are Number.MAX_VALUE and -Number.MAX_VALUE. Set bounds to prevent errors
+	        highLow.high = 1;
 	        highLow.low = 0;
 	      }
 	    }
@@ -33453,6 +33630,10 @@
 	      }
 	    }
 
+	    // step must not be less than EPSILON to create values that can be represented as floating number.
+	    var EPSILON = 2.221E-16;
+	    bounds.step = Math.max(bounds.step, EPSILON);
+
 	    // Narrow min and max based on new step
 	    newMin = bounds.min;
 	    newMax = bounds.max;
@@ -33466,11 +33647,14 @@
 	    bounds.max = newMax;
 	    bounds.range = bounds.max - bounds.min;
 
-	    bounds.values = [];
+	    var values = [];
 	    for (i = bounds.min; i <= bounds.max; i += bounds.step) {
-	      bounds.values.push(Chartist.roundWithPrecision(i));
+	      var value = Chartist.roundWithPrecision(i);
+	      if (value !== values[values.length - 1]) {
+	        values.push(i);
+	      }
 	    }
-
+	    bounds.values = values;
 	    return bounds;
 	  };
 
@@ -33608,7 +33792,7 @@
 	    positionalData[axis.units.pos] = position + labelOffset[axis.units.pos];
 	    positionalData[axis.counterUnits.pos] = labelOffset[axis.counterUnits.pos];
 	    positionalData[axis.units.len] = length;
-	    positionalData[axis.counterUnits.len] = axisOffset - 10;
+	    positionalData[axis.counterUnits.len] = Math.max(0, axisOffset - 10);
 
 	    if(useForeignObject) {
 	      // We need to set width and height explicitly to px as span will not expand with width and height being
@@ -33668,7 +33852,7 @@
 	      mediaQueryListeners = [],
 	      i;
 
-	    function updateCurrentOptions(preventChangedEvent) {
+	    function updateCurrentOptions(mediaEvent) {
 	      var previousOptions = currentOptions;
 	      currentOptions = Chartist.extend({}, baseOptions);
 
@@ -33681,7 +33865,7 @@
 	        }
 	      }
 
-	      if(eventEmitter && !preventChangedEvent) {
+	      if(eventEmitter && mediaEvent) {
 	        eventEmitter.emit('optionsChanged', {
 	          previousOptions: previousOptions,
 	          currentOptions: currentOptions
@@ -33705,8 +33889,8 @@
 	        mediaQueryListeners.push(mql);
 	      }
 	    }
-	    // Execute initially so we get the correct options
-	    updateCurrentOptions(true);
+	    // Execute initially without an event argument so we get the correct options
+	    updateCurrentOptions();
 
 	    return {
 	      removeMediaQueryListeners: removeMediaQueryListeners,
@@ -33716,6 +33900,73 @@
 	    };
 	  };
 
+
+	  /**
+	   * Splits a list of coordinates and associated values into segments. Each returned segment contains a pathCoordinates
+	   * valueData property describing the segment.
+	   *
+	   * With the default options, segments consist of contiguous sets of points that do not have an undefined value. Any
+	   * points with undefined values are discarded.
+	   *
+	   * **Options**
+	   * The following options are used to determine how segments are formed
+	   * ```javascript
+	   * var options = {
+	   *   // If fillHoles is true, undefined values are simply discarded without creating a new segment. Assuming other options are default, this returns single segment.
+	   *   fillHoles: false,
+	   *   // If increasingX is true, the coordinates in all segments have strictly increasing x-values.
+	   *   increasingX: false
+	   * };
+	   * ```
+	   *
+	   * @memberof Chartist.Core
+	   * @param {Array} pathCoordinates List of point coordinates to be split in the form [x1, y1, x2, y2 ... xn, yn]
+	   * @param {Array} values List of associated point values in the form [v1, v2 .. vn]
+	   * @param {Object} options Options set by user
+	   * @return {Array} List of segments, each containing a pathCoordinates and valueData property.
+	   */
+	  Chartist.splitIntoSegments = function(pathCoordinates, valueData, options) {
+	    var defaultOptions = {
+	      increasingX: false,
+	      fillHoles: false
+	    };
+
+	    options = Chartist.extend({}, defaultOptions, options);
+
+	    var segments = [];
+	    var hole = true;
+
+	    for(var i = 0; i < pathCoordinates.length; i += 2) {
+	      // If this value is a "hole" we set the hole flag
+	      if(valueData[i / 2].value === undefined) {
+	        if(!options.fillHoles) {
+	          hole = true;
+	        }
+	      } else {
+	        if(options.increasingX && i >= 2 && pathCoordinates[i] <= pathCoordinates[i-2]) {
+	          // X is not increasing, so we need to make sure we start a new segment
+	          hole = true;
+	        }
+
+
+	        // If it's a valid value we need to check if we're coming out of a hole and create a new empty segment
+	        if(hole) {
+	          segments.push({
+	            pathCoordinates: [],
+	            valueData: []
+	          });
+	          // As we have a valid value now, we are not in a "hole" anymore
+	          hole = false;
+	        }
+
+	        // Add to the segment pathCoordinates and valueData
+	        segments[segments.length - 1].pathCoordinates.push(pathCoordinates[i], pathCoordinates[i + 1]);
+	        segments[segments.length - 1].valueData.push(valueData[i / 2]);
+	      }
+	    }
+
+	    return segments;
+	  };
 	}(window, document, Chartist));
 	;/**
 	 * Chartist path interpolation functions.
@@ -33881,48 +34132,20 @@
 	    var t = Math.min(1, Math.max(0, options.tension)),
 	      c = 1 - t;
 
-	    // This function will help us to split pathCoordinates and valueData into segments that also contain pathCoordinates
-	    // and valueData. This way the existing functions can be reused and the segment paths can be joined afterwards.
-	    // This functionality is necessary to treat "holes" in the line charts
-	    function splitIntoSegments(pathCoordinates, valueData) {
-	      var segments = [];
-	      var hole = true;
-
-	      for(var i = 0; i < pathCoordinates.length; i += 2) {
-	        // If this value is a "hole" we set the hole flag
-	        if(valueData[i / 2].value === undefined) {
-	          if(!options.fillHoles) {
-	            hole = true;
-	          }
-	        } else {
-	          // If it's a valid value we need to check if we're coming out of a hole and create a new empty segment
-	          if(hole) {
-	            segments.push({
-	              pathCoordinates: [],
-	              valueData: []
-	            });
-	            // As we have a valid value now, we are not in a "hole" anymore
-	            hole = false;
-	          }
-
-	          // Add to the segment pathCoordinates and valueData
-	          segments[segments.length - 1].pathCoordinates.push(pathCoordinates[i], pathCoordinates[i + 1]);
-	          segments[segments.length - 1].valueData.push(valueData[i / 2]);
-	        }
-	      }
-
-	      return segments;
-	    }
-
 	    return function cardinal(pathCoordinates, valueData) {
 	      // First we try to split the coordinates into segments
 	      // This is necessary to treat "holes" in line charts
-	      var segments = splitIntoSegments(pathCoordinates, valueData);
+	      var segments = Chartist.splitIntoSegments(pathCoordinates, valueData, {
+	        fillHoles: options.fillHoles
+	      });
 
-	      // If the split resulted in more that one segment we need to interpolate each segment individually and join them
-	      // afterwards together into a single path.
-	      if(segments.length > 1) {
-	        var paths = [];
+	      if(!segments.length) {
+	        // If there were no segments return 'Chartist.Interpolation.none'
+	        return Chartist.Interpolation.none()([]);
+	      } else if(segments.length > 1) {
+	        // If the split resulted in more that one segment we need to interpolate each segment individually and join them
+	        // afterwards together into a single path.
+	          var paths = [];
 	        // For each segment we will recurse the cardinal function
 	        segments.forEach(function(segment) {
 	          paths.push(cardinal(segment.pathCoordinates, segment.valueData));
@@ -33976,6 +34199,137 @@
 	            p[2].y,
 	            false,
 	            valueData[(i + 2) / 2]
+	          );
+	        }
+
+	        return path;
+	      }
+	    };
+	  };
+
+	  /**
+	   * Monotone Cubic spline interpolation produces a smooth curve which preserves monotonicity. Unlike cardinal splines, the curve will not extend beyond the range of y-values of the original data points.
+	   *
+	   * Monotone Cubic splines can only be created if there are more than two data points. If this is not the case this smoothing will fallback to `Chartist.Smoothing.none`.
+	   *
+	   * The x-values of subsequent points must be increasing to fit a Monotone Cubic spline. If this condition is not met for a pair of adjacent points, then there will be a break in the curve between those data points.
+	   *
+	   * All smoothing functions within Chartist are factory functions that accept an options parameter.
+	   *
+	   * @example
+	   * var chart = new Chartist.Line('.ct-chart', {
+	   *   labels: [1, 2, 3, 4, 5],
+	   *   series: [[1, 2, 8, 1, 7]]
+	   * }, {
+	   *   lineSmooth: Chartist.Interpolation.monotoneCubic({
+	   *     fillHoles: false
+	   *   })
+	   * });
+	   *
+	   * @memberof Chartist.Interpolation
+	   * @param {Object} options The options of the monotoneCubic factory function.
+	   * @return {Function}
+	   */
+	  Chartist.Interpolation.monotoneCubic = function(options) {
+	    var defaultOptions = {
+	      fillHoles: false
+	    };
+
+	    options = Chartist.extend({}, defaultOptions, options);
+
+	    return function monotoneCubic(pathCoordinates, valueData) {
+	      // First we try to split the coordinates into segments
+	      // This is necessary to treat "holes" in line charts
+	      var segments = Chartist.splitIntoSegments(pathCoordinates, valueData, {
+	        fillHoles: options.fillHoles,
+	        increasingX: true
+	      });
+
+	      if(!segments.length) {
+	        // If there were no segments return 'Chartist.Interpolation.none'
+	        return Chartist.Interpolation.none()([]);
+	      } else if(segments.length > 1) {
+	        // If the split resulted in more that one segment we need to interpolate each segment individually and join them
+	        // afterwards together into a single path.
+	          var paths = [];
+	        // For each segment we will recurse the monotoneCubic fn function
+	        segments.forEach(function(segment) {
+	          paths.push(monotoneCubic(segment.pathCoordinates, segment.valueData));
+	        });
+	        // Join the segment path data into a single path and return
+	        return Chartist.Svg.Path.join(paths);
+	      } else {
+	        // If there was only one segment we can proceed regularly by using pathCoordinates and valueData from the first
+	        // segment
+	        pathCoordinates = segments[0].pathCoordinates;
+	        valueData = segments[0].valueData;
+
+	        // If less than three points we need to fallback to no smoothing
+	        if(pathCoordinates.length <= 4) {
+	          return Chartist.Interpolation.none()(pathCoordinates, valueData);
+	        }
+
+	        var xs = [],
+	          ys = [],
+	          i,
+	          n = pathCoordinates.length / 2,
+	          ms = [],
+	          ds = [], dys = [], dxs = [],
+	          path;
+
+	        // Populate x and y coordinates into separate arrays, for readability
+
+	        for(i = 0; i < n; i++) {
+	          xs[i] = pathCoordinates[i * 2];
+	          ys[i] = pathCoordinates[i * 2 + 1];
+	        }
+
+	        // Calculate deltas and derivative
+
+	        for(i = 0; i < n - 1; i++) {
+	          dys[i] = ys[i + 1] - ys[i];
+	          dxs[i] = xs[i + 1] - xs[i];
+	          ds[i] = dys[i] / dxs[i];
+	        }
+
+	        // Determine desired slope (m) at each point using Fritsch-Carlson method
+	        // See: http://math.stackexchange.com/questions/45218/implementation-of-monotone-cubic-interpolation
+
+	        ms[0] = ds[0];
+	        ms[n - 1] = ds[n - 2];
+
+	        for(i = 1; i < n - 1; i++) {
+	          if(ds[i] === 0 || ds[i - 1] === 0 || (ds[i - 1] > 0) !== (ds[i] > 0)) {
+	            ms[i] = 0;
+	          } else {
+	            ms[i] = 3 * (dxs[i - 1] + dxs[i]) / (
+	              (2 * dxs[i] + dxs[i - 1]) / ds[i - 1] +
+	              (dxs[i] + 2 * dxs[i - 1]) / ds[i]);
+
+	            if(!isFinite(ms[i])) {
+	              ms[i] = 0;
+	            }
+	          }
+	        }
+
+	        // Now build a path from the slopes
+
+	        path = new Chartist.Svg.Path().move(xs[0], ys[0], false, valueData[0]);
+
+	        for(i = 0; i < n - 1; i++) {
+	          path.curve(
+	            // First control point
+	            xs[i] + dxs[i] / 3,
+	            ys[i] + ms[i] * dxs[i] / 3,
+	            // Second control point
+	            xs[i + 1] - dxs[i] / 3,
+	            ys[i + 1] - ms[i + 1] * dxs[i] / 3,
+	            // End point
+	            xs[i + 1],
+	            ys[i + 1],
+
+	            false,
+	            valueData[i + 1]
 	          );
 	        }
 
@@ -34438,16 +34792,6 @@
 	(function(window, document, Chartist) {
 	  'use strict';
 
-	  var svgNs = 'http://www.w3.org/2000/svg',
-	    xmlNs = 'http://www.w3.org/2000/xmlns/',
-	    xhtmlNs = 'http://www.w3.org/1999/xhtml';
-
-	  Chartist.xmlNs = {
-	    qualifiedName: 'xmlns:ct',
-	    prefix: 'ct',
-	    uri: 'http://gionkunz.github.com/chartist-js/ct'
-	  };
-
 	  /**
 	   * Chartist.Svg creates a new SVG object wrapper with a starting element. You can use the wrapper to fluently create sub-elements and modify them.
 	   *
@@ -34464,11 +34808,13 @@
 	    if(name instanceof Element) {
 	      this._node = name;
 	    } else {
-	      this._node = document.createElementNS(svgNs, name);
+	      this._node = document.createElementNS(Chartist.namespaces.svg, name);
 
 	      // If this is an SVG element created then custom namespace
 	      if(name === 'svg') {
-	        this._node.setAttributeNS(xmlNs, Chartist.xmlNs.qualifiedName, Chartist.xmlNs.uri);
+	        this.attr({
+	          'xmlns:ct': Chartist.namespaces.ct
+	        });
 	      }
 	    }
 
@@ -34494,7 +34840,7 @@
 	   *
 	   * @memberof Chartist.Svg
 	   * @param {Object|String} attributes An object with properties that will be added as attributes to the SVG element that is created. Attributes with undefined values will not be added. If this parameter is a String then the function is used as a getter and will return the attribute value.
-	   * @param {String} ns If specified, the attributes will be set as namespace attributes with ns as prefix.
+	   * @param {String} ns If specified, the attribute will be obtained using getAttributeNs. In order to write namepsaced attributes you can use the namespace:attribute notation within the attributes object.
 	   * @return {Object|String} The current wrapper object will be returned so it can be used for chaining or the attribute value if used as getter function.
 	   */
 	  function attr(attributes, ns) {
@@ -34512,8 +34858,9 @@
 	        return;
 	      }
 
-	      if(ns) {
-	        this._node.setAttributeNS(ns, [Chartist.xmlNs.prefix, ':', key].join(''), attributes[key]);
+	      if (key.indexOf(':') !== -1) {
+	        var namespacedAttribute = key.split(':');
+	        this._node.setAttributeNS(Chartist.namespaces[namespacedAttribute[0]], key, attributes[key]);
 	      } else {
 	        this._node.setAttribute(key, attributes[key]);
 	      }
@@ -34604,7 +34951,7 @@
 	    }
 
 	    // Adding namespace to content element
-	    content.setAttribute('xmlns', xhtmlNs);
+	    content.setAttribute('xmlns', Chartist.namespaces.xmlns);
 
 	    // Creating the foreignObject without required extension attribute (as described here
 	    // http://www.w3.org/TR/SVG/extend.html#ForeignObjectElement)
@@ -34742,43 +35089,23 @@
 	  }
 
 	  /**
-	   * "Save" way to get property value from svg BoundingBox.
-	   * This is a workaround. Firefox throws an NS_ERROR_FAILURE error if getBBox() is called on an invisible node.
-	   * See [NS_ERROR_FAILURE: Component returned failure code: 0x80004005](http://jsfiddle.net/sym3tri/kWWDK/)
-	   *
-	   * @memberof Chartist.Svg
-	   * @param {SVGElement} node The svg node to
-	   * @param {String} prop The property to fetch (ex.: height, width, ...)
-	   * @returns {Number} The value of the given bbox property
-	   */
-	  function getBBoxProperty(node, prop) {
-	    try {
-	      return node.getBBox()[prop];
-	    } catch(e) {}
-
-	    return 0;
-	  }
-
-	  /**
-	   * Get element height with fallback to svg BoundingBox or parent container dimensions:
-	   * See [bugzilla.mozilla.org](https://bugzilla.mozilla.org/show_bug.cgi?id=530985)
+	   * Get element height using `getBoundingClientRect`
 	   *
 	   * @memberof Chartist.Svg
 	   * @return {Number} The elements height in pixels
 	   */
 	  function height() {
-	    return this._node.clientHeight || Math.round(getBBoxProperty(this._node, 'height')) || this._node.parentNode.clientHeight;
+	    return this._node.getBoundingClientRect().height;
 	  }
 
 	  /**
-	   * Get element width with fallback to svg BoundingBox or parent container dimensions:
-	   * See [bugzilla.mozilla.org](https://bugzilla.mozilla.org/show_bug.cgi?id=530985)
+	   * Get element width using `getBoundingClientRect`
 	   *
 	   * @memberof Chartist.Core
 	   * @return {Number} The elements width in pixels
 	   */
 	  function width() {
-	    return this._node.clientWidth || Math.round(getBBoxProperty(this._node, 'width')) || this._node.parentNode.clientWidth;
+	    return this._node.getBoundingClientRect().width;
 	  }
 
 	  /**
@@ -35486,7 +35813,7 @@
 	      }
 
 	      // Skip grid lines and labels where interpolated label values are falsey (execpt for 0)
-	      if(!labelValues[index] && labelValues[index] !== 0) {
+	      if(Chartist.isFalseyButZero(labelValues[index]) && labelValues[index] !== '') {
 	        return;
 	      }
 
@@ -35803,6 +36130,7 @@
 	   *
 	   */
 	  function createChart(options) {
+	    this.data = Chartist.normalizeData(this.data);
 	    var data = {
 	      raw: this.data,
 	      normalized: Chartist.getDataArray(this.data, options.reverseData, true)
@@ -35845,9 +36173,9 @@
 
 	      // Write attributes to series group element. If series name or meta is undefined the attributes will not be written
 	      seriesElement.attr({
-	        'series-name': series.name,
-	        'meta': Chartist.serialize(series.meta)
-	      }, Chartist.xmlNs.uri);
+	        'ct:series-name': series.name,
+	        'ct:meta': Chartist.serialize(series.meta)
+	      });
 
 	      // Use series class from series data or if not set generate one
 	      seriesElement.addClass([
@@ -35880,7 +36208,7 @@
 	      };
 
 	      var smoothing = typeof seriesOptions.lineSmooth === 'function' ?
-	        seriesOptions.lineSmooth : (seriesOptions.lineSmooth ? Chartist.Interpolation.cardinal() : Chartist.Interpolation.none());
+	        seriesOptions.lineSmooth : (seriesOptions.lineSmooth ? Chartist.Interpolation.monotoneCubic() : Chartist.Interpolation.none());
 	      // Interpolating path where pathData will be used to annotate each path element so we can trace back the original
 	      // index, value and meta data
 	      var path = smoothing(pathCoordinates, pathData);
@@ -35897,11 +36225,9 @@
 	            x2: pathElement.x + 0.01,
 	            y2: pathElement.y
 	          }, options.classNames.point).attr({
-	            'value': [pathElement.data.value.x, pathElement.data.value.y].filter(function(v) {
-	                return v;
-	              }).join(','),
-	            'meta': pathElement.data.meta
-	          }, Chartist.xmlNs.uri);
+	            'ct:value': [pathElement.data.value.x, pathElement.data.value.y].filter(Chartist.isNum).join(','),
+	            'ct:meta': pathElement.data.meta
+	          });
 
 	          this.eventEmitter.emit('draw', {
 	            type: 'point',
@@ -35975,9 +36301,7 @@
 	          // and adding the created DOM elements to the correct series group
 	          var area = seriesElement.elem('path', {
 	            d: areaPath.stringify()
-	          }, options.classNames.area, true).attr({
-	            'values': data.normalized[seriesIndex]
-	          }, Chartist.xmlNs.uri);
+	          }, options.classNames.area, true);
 
 	          // Emit an event for each area that was drawn
 	          this.eventEmitter.emit('draw', {
@@ -36063,7 +36387,7 @@
 	   *   ]
 	   * };
 	   *
-	   * // In adition to the regular options we specify responsive option overrides that will override the default configutation based on the matching media queries.
+	   * // In addition to the regular options we specify responsive option overrides that will override the default configutation based on the matching media queries.
 	   * var responsiveOptions = [
 	   *   ['screen and (min-width: 641px) and (max-width: 1024px)', {
 	   *     showPoint: false,
@@ -36171,8 +36495,6 @@
 	    high: undefined,
 	    // Overriding the natural low of the chart allows you to zoom in or limit the charts lowest displayed value
 	    low: undefined,
-	    // Use only integer values (whole numbers) for the scale steps
-	    onlyInteger: false,
 	    // Padding of the chart drawing area to the container element and labels as a number or padding object {top: 5, right: 5, bottom: 5, left: 5}
 	    chartPadding: {
 	      top: 15,
@@ -36215,6 +36537,7 @@
 	   *
 	   */
 	  function createChart(options) {
+	    this.data = Chartist.normalizeData(this.data);
 	    var data = {
 	      raw: this.data,
 	      normalized: options.distributeSeries ? Chartist.getDataArray(this.data, options.reverseData, options.horizontalBars ? 'x' : 'y').map(function(value) {
@@ -36237,15 +36560,15 @@
 	    var seriesGroup = this.svg.elem('g');
 	    var labelGroup = this.svg.elem('g').addClass(options.classNames.labelGroup);
 
-	    if(options.stackBars) {
+	    if(options.stackBars && data.normalized.length !== 0) {
 	      // If stacked bars we need to calculate the high low from stacked values from each series
 	      var serialSums = Chartist.serialMap(data.normalized, function serialSums() {
 	        return Array.prototype.slice.call(arguments).map(function(value) {
 	          return value;
 	        }).reduce(function(prev, curr) {
 	          return {
-	            x: prev.x + curr.x || 0,
-	            y: prev.y + curr.y || 0
+	            x: prev.x + (curr && curr.x) || 0,
+	            y: prev.y + (curr && curr.y) || 0
 	          };
 	        }, {x: 0, y: 0});
 	      });
@@ -36361,9 +36684,9 @@
 
 	      // Write attributes to series group element. If series name or meta is undefined the attributes will not be written
 	      seriesElement.attr({
-	        'series-name': series.name,
-	        'meta': Chartist.serialize(series.meta)
-	      }, Chartist.xmlNs.uri);
+	        'ct:series-name': series.name,
+	        'ct:meta': Chartist.serialize(series.meta)
+	      });
 
 	      // Use series class from series data or if not set generate one
 	      seriesElement.addClass([
@@ -36452,11 +36775,9 @@
 
 	        // Create bar element
 	        bar = seriesElement.elem('line', positions, options.classNames.bar).attr({
-	          'value': [value.x, value.y].filter(function(v) {
-	            return v;
-	          }).join(','),
-	          'meta': Chartist.getMetaData(series, valueIndex)
-	        }, Chartist.xmlNs.uri);
+	          'ct:value': [value.x, value.y].filter(Chartist.isNum).join(','),
+	          'ct:meta': Chartist.getMetaData(series, valueIndex)
+	        });
 
 	        this.eventEmitter.emit('draw', Chartist.extend({
 	          type: 'bar',
@@ -36587,7 +36908,9 @@
 	    // Label direction can be 'neutral', 'explode' or 'implode'. The labels anchor will be positioned based on those settings as well as the fact if the labels are on the right or left side of the center of the chart. Usually explode is useful when labels are positioned far away from the center.
 	    labelDirection: 'neutral',
 	    // If true the whole data is reversed including labels, the series order as well as the whole series data arrays.
-	    reverseData: false
+	    reverseData: false,
+	    // If true empty values will be ignored to avoid drawing unncessary slices and labels
+	    ignoreEmptyValues: false
 	  };
 
 	  /**
@@ -36618,6 +36941,7 @@
 	   * @param options
 	   */
 	  function createChart(options) {
+	    this.data = Chartist.normalizeData(this.data);
 	    var seriesGroups = [],
 	      labelsGroup,
 	      chartRect,
@@ -36682,13 +37006,16 @@
 	    // Draw the series
 	    // initialize series groups
 	    for (var i = 0; i < this.data.series.length; i++) {
+	      // If current value is zero and we are ignoring empty values then skip to next value
+	      if (dataArray[i] === 0 && options.ignoreEmptyValues) continue;
+
 	      var series = this.data.series[i];
 	      seriesGroups[i] = this.svg.elem('g', null, null, true);
 
 	      // If the series is an object and contains a name or meta data we add a custom attribute
 	      seriesGroups[i].attr({
-	        'series-name': series.name
-	      }, Chartist.xmlNs.uri);
+	        'ct:series-name': series.name
+	      });
 
 	      // Use series class from series data or if not set generate one
 	      seriesGroups[i].addClass([
@@ -36697,13 +37024,17 @@
 	      ].join(' '));
 
 	      var endAngle = startAngle + dataArray[i] / totalDataSum * 360;
+
+	      // Use slight offset so there are no transparent hairline issues
+	      var overlappigStartAngle = Math.max(0, startAngle - (i === 0 || hasSingleValInSeries ? 0 : 0.2));
+
 	      // If we need to draw the arc for all 360 degrees we need to add a hack where we close the circle
 	      // with Z and use 359.99 degrees
-	      if(endAngle - startAngle === 360) {
-	        endAngle -= 0.01;
+	      if(endAngle - overlappigStartAngle >= 359.99) {
+	        endAngle = overlappigStartAngle + 359.99;
 	      }
 
-	      var start = Chartist.polarToCartesian(center.x, center.y, radius, startAngle - (i === 0 || hasSingleValInSeries ? 0 : 0.2)),
+	      var start = Chartist.polarToCartesian(center.x, center.y, radius, overlappigStartAngle),
 	        end = Chartist.polarToCartesian(center.x, center.y, radius, endAngle);
 
 	      // Create a new path element for the pie chart. If this isn't a donut chart we should close the path for a correct stroke
@@ -36724,9 +37055,9 @@
 
 	      // Adding the pie series value to the path
 	      pathElement.attr({
-	        'value': dataArray[i],
-	        'meta': Chartist.serialize(series.meta)
-	      }, Chartist.xmlNs.uri);
+	        'ct:value': dataArray[i],
+	        'ct:meta': Chartist.serialize(series.meta)
+	      });
 
 	      // If this is a donut, we add the stroke-width as style attribute
 	      if(options.donut) {
@@ -36756,7 +37087,7 @@
 	      if(options.showLabel) {
 	        // Position at the labelRadius distance from center and between start and end angle
 	        var labelPosition = Chartist.polarToCartesian(center.x, center.y, labelRadius, startAngle + (endAngle - startAngle) / 2),
-	          interpolatedValue = options.labelInterpolationFnc(this.data.labels ? this.data.labels[i] : dataArray[i], i);
+	          interpolatedValue = options.labelInterpolationFnc(this.data.labels && !Chartist.isFalseyButZero(this.data.labels[i]) ? this.data.labels[i] : dataArray[i], i);
 
 	        if(interpolatedValue || interpolatedValue === 0) {
 	          var labelElement = labelsGroup.elem('text', {
@@ -36778,7 +37109,7 @@
 	        }
 	      }
 
-	      // Set next startAngle to current endAngle. Use slight offset so there are no transparent hairline issues
+	      // Set next startAngle to current endAngle.
 	      // (except for last slice)
 	      startAngle = endAngle;
 	    }
@@ -36881,5 +37212,5 @@
 	}));
 
 
-/***/ }
+/***/ })
 /******/ ]);

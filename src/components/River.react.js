@@ -5,7 +5,7 @@ import Site from './Site.react';
 export default class River extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {report: null, siteData: null}
+    this.state = {report: null, siteData: null, reportLoading: true, dataLoading: true}
   }
 
   componentDidMount() {
@@ -21,7 +21,7 @@ export default class River extends React.Component {
   }
 
   fetchRiverData(river){
-    this.setState({siteData: null})
+    this.setState({siteData: null, dataLoading: true})
     var siteCodes = {
       clackamas: '14210000',
       sandy: '14142500',
@@ -30,15 +30,17 @@ export default class River extends React.Component {
     $.get('/site/'+siteCodes[river], (data) => {
         this.setState({
           siteData: USGS.simplify(data),
+          dataLoading: false
         });
     });
   }
 
   fetchRiverReport(river) {
-    this.setState({report: null})
+    this.setState({report: null, reportLoading: true })
     $.get('/report/'+river, (data) => {
         this.setState({
-          report: data[0]
+          report: data[0],
+          reportLoading: false
         });
     });
   }
@@ -47,17 +49,34 @@ export default class River extends React.Component {
     var report = null;
     var date = null;
     var species = null;
-    var reportParagraphs = null;
+    var content = null;
+    var style = {marginBottom: "3rem"};
+
     if (this.state.report) {
       report = this.state.report;
       date = '\u2014 ' + report.date;
       species = report.species
-      reportParagraphs  = report.report.map(function(grph, ind) {
-        return <p key={ind+new Date().getTime()}>{grph}</p>
-      })
+      content = (
+        <div style={style}>
+          <h4>Fishing Report {date}</h4>
+          <div>
+            <h6>Species: {species}</h6>
+            { 
+              report.report.map(function(grph, ind) {
+                return <p key={ind+new Date().getTime()}>{grph}</p>
+              })
+            }
+          </div>
+        </div>
+      );
     } else {
-      reportParagraphs = <img src="/img/gps.gif"/>
+      content = (
+        <div style={style}>
+          <h4>Fishing Report Not Available</h4>
+        </div>
+      );
     }
+
     return (
       <article>
         <div className="container-fluid">
@@ -66,13 +85,10 @@ export default class River extends React.Component {
         </div>
           <div className="row">
             <div className="col-md-6">
-              <div>
-                <h4>Fishing Report {date}</h4>
-                <div>
-                  <h6>Species: {species}</h6>
-                  {reportParagraphs}
-                </div>
-              </div>
+                { this.state.reportLoading 
+                  ? <div style={style}><img src="/img/gps.gif"/></div>
+                  : content
+                }
             </div>
             <div className="col-md-6">
               <div>
