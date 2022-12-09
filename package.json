@@ -31,7 +31,7 @@
     "chartist": "^0.9.5",
     "cheerio": "^0.19.0",
     "css-loader": "^0.23.1",
-    "express": "^4.13.3",
+    "express": "^4.17.3",
     "lodash": "^3.10.1",
     "mocha": "^2.3.4",
     "react": "^0.14.6",
@@ -55,7 +55,7 @@
   "homepage": "https://github.com/monkeyFeathers/riverinformer#readme",
   "dependencies": {
     "cheerio": "^0.19.0",
-    "express": "^4.13.3",
+    "express": "^4.17.3",
     "lodash": "^3.10.1",
     "nodemon": "^1.18.10",
     "superagent": "^1.6.1"
